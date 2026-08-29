@@ -73,15 +73,17 @@ cards' `license:` keys in the same commit.
 1. Create the target Hugging Face Space.
 2. Add the GitHub repository variable `HF_SPACE_REPO_ID` with a value such as
    `username/recaman-next-move`.
-3. Add the GitHub Actions secret `HF_TOKEN`. Use a fine-grained Hugging Face
-   token with write access only to the target Space.
+3. Add the GitHub Actions secret `HF_RECAMAN`. Use a fine-grained Hugging Face
+   token with write access only to the `HF_SPACE_REPO_ID` target Space. Do not
+   reuse tokens belonging to other Spaces.
 4. Optionally configure protection or required reviewers for the
    `huggingface-space` GitHub environment.
 5. Push to `main`, or run the workflow manually after merging a tested change.
 
 Repeat with `HF_HOLES_SPACE_REPO_ID` for the Claude.ai holes Space; the two
-deploy jobs are independent. If a variable is absent, that deployment is
-skipped while CI continues to run normally.
+deploy jobs are independent. Its credential remains separately configured as
+`HF_HOLES_TOKEN`. If a variable is absent, that deployment is skipped while CI
+continues to run normally.
 
 ## PyPI publishing
 
