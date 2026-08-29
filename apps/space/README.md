@@ -2,14 +2,14 @@
 title: Recamán Next-Move Model Lab
 emoji: 🧠
 colorFrom: purple
-colorTo: cyan
+colorTo: blue
 sdk: gradio
 sdk_version: 5.50.0
 python_version: "3.11"
 app_file: app.py
 license: mit
 pinned: false
-short_description: Forward-held-out inferred agents for Recamán's next blocked/free move
+short_description: Forward-held-out agents for Recamán's next move
 tags:
   - mathematics
   - number-theory
