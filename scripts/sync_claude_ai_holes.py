@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Sync the files that make `apps/space/` self-contained.
+"""Sync the files that make the Claude.ai holes Space self-contained.
 
-The Space is deployed from `apps/space/` with that directory as its own root,
+That Space is deployed from `apps/claude_ai_holes/` with that directory as its own root,
 so it cannot read `obstructions.txt`, `outputs/` or `assets/` at run time.
 Rather than hand-copying — or hotlinking another repository — every file the
 Space needs is projected out of this repository here, and CI fails if any of
@@ -16,8 +16,8 @@ Three things are synced:
   recomputed cheaply, read from the saved runs in `outputs/`.
 * `assets/online-presence.svg` — the project mark, copied from `assets/`.
 
-    python scripts/sync_space.py
-    python scripts/sync_space.py --check     # CI: fail if anything is stale
+    python scripts/sync_claude_ai_holes.py
+    python scripts/sync_claude_ai_holes.py --check     # CI: fail if anything is stale
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SPACE_DIR = REPO_ROOT / "apps" / "space"
+SPACE_DIR = REPO_ROOT / "apps" / "claude_ai_holes"
 
 CATALOGUE = REPO_ROOT / "obstructions.txt"
 VERSION_C = REPO_ROOT / "outputs" / "version_c_obstructions_results.json"
@@ -58,7 +58,7 @@ def build_results() -> dict[str, object]:
     search = random_matrix["search"]
 
     return {
-        "generator": "scripts/sync_space.py",
+        "generator": "scripts/sync_claude_ai_holes.py",
         "sources": {
             "catalogue": "obstructions.txt",
             "version_c": "outputs/version_c_obstructions_results.json",
@@ -138,7 +138,7 @@ def main() -> int:
     if stale:
         for relative in stale:
             print(f"OUT OF DATE: {relative}")
-        print("run `python scripts/sync_space.py` and commit the result")
+        print("run `python scripts/sync_claude_ai_holes.py` and commit the result")
         return 1
     return 0
 

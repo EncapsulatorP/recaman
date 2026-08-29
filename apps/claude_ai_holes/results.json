@@ -1,5 +1,5 @@
 {
-  "generator": "scripts/sync_space.py",
+  "generator": "scripts/sync_claude_ai_holes.py",
   "sources": {
     "catalogue": "obstructions.txt",
     "version_c": "outputs/version_c_obstructions_results.json",
