@@ -42,7 +42,9 @@ jobs:
           python -m pip install -r requirements-dev.txt
 
       - name: Compile Python sources
-        run: python -m compileall -q run_all.py scripts apps/space tests
+        run: >-
+          python -m compileall -q
+          run_all.py scripts apps/space apps/claude_ai_holes tests
 
       - name: Run unit tests
         run: python -m pytest -q
@@ -52,6 +54,12 @@ jobs:
 
       - name: Verify the infographic matches the saved run
         run: python scripts/make_infographic.py --check
+
+      - name: Verify the Claude.ai holes Space files are current
+        run: python scripts/sync_claude_ai_holes.py --check
+
+      - name: Verify the Claude.ai holes infographic matches the catalogue
+        run: python scripts/make_claude_ai_holes_infographic.py --check
 
       - name: Validate experiment runner
         run: python run_all.py --dry-run
