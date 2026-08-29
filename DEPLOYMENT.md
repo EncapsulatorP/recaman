@@ -19,10 +19,10 @@ The GitHub Actions workflow in `.github/workflows/ci-cd.yml` runs:
 The repository ships two independent Gradio apps, because it studies two
 different things and they must not be confused:
 
-| directory | subject | HF repo variable |
-| --- | --- | --- |
-| `apps/space/` | the process-side obstruction bit `b(n)` | `HF_SPACE_REPO_ID` |
-| `apps/claude_ai_holes/` | the absolute holes — integers never reached (**Claude.ai version**) | `HF_HOLES_SPACE_REPO_ID` |
+| directory | product | target Space | isolated secret |
+| --- | --- | --- | --- |
+| `apps/space/` | forward-held-out next-move model arena | `kugguk/recaman-next-move` via `HF_SPACE_REPO_ID` | `HF_RECAMAN` |
+| `apps/claude_ai_holes/` | lossless obstruction compression lab | `kugguk/recaman-obstruction-lab` via `HF_HOLES_SPACE_REPO_ID` | `HF_HOLES_TOKEN` |
 
 Each is deployed on its own, with its directory as the Space root, so its
 modules are top-level there (`import predictor`, not `import apps.space.predictor`).
@@ -31,19 +31,20 @@ deliberately distinct so they can coexist. Both depend on Gradio alone — the
 figures are SVG generated at request time, so there is no plotting stack and no
 image asset to keep in sync.
 
-The Claude.ai holes assets carry a `CLAUDE.AI VERSION` watermark, in the poster
-and in the Space card, so the two variants stay tellable apart wherever they end
-up.
+The apps intentionally use different product language and experiments. The next-move
+Space ranks inferred process models on a future block. The obstruction Space measures
+lossless catalogue/process compression and verifies every custom codec by decoding it.
 
 ## Regenerating the derived files
 
-Four files in the tree are generated, and CI fails if any drifts:
+The Space data files in the tree are generated, and CI fails if any drifts:
 
 ```bash
 python scripts/build_space_measurements.py            # apps/space/measurements.json
 python scripts/make_infographic.py                    # outputs/recaman_next_move_infographic.svg
 python scripts/sync_claude_ai_holes.py                # apps/claude_ai_holes/{holes.txt,results.json,assets/}
 python scripts/make_claude_ai_holes_infographic.py    # outputs/recaman_holes_infographic_claude-ai.svg
+python scripts/build_obstruction_tower_space.py       # apps/space/{holes.txt,tower_measurements.json}
 ```
 
 The first two read `outputs/recaman_wheel_results.json`; the last two read
@@ -80,10 +81,11 @@ cards' `license:` keys in the same commit.
    `huggingface-space` GitHub environment.
 5. Push to `main`, or run the workflow manually after merging a tested change.
 
-Repeat with `HF_HOLES_SPACE_REPO_ID` for the Claude.ai holes Space; the two
-deploy jobs are independent. Its credential remains separately configured as
-`HF_HOLES_TOKEN`. If a variable is absent, that deployment is skipped while CI
-continues to run normally.
+Set `HF_HOLES_SPACE_REPO_ID=kugguk/recaman-obstruction-lab` for the compression
+Space. The two deploy jobs are independent, and its credential remains separately
+configured as `HF_HOLES_TOKEN`. Neither token should grant access to the sibling
+Space or to any other kugguk Space. If a variable is absent, that deployment is
+skipped while CI continues to run normally.
 
 ## PyPI publishing
 
