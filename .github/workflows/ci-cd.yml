@@ -1,0 +1,127 @@
+name: CI and Hugging Face CD
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-cd-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  python-ci:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      - name: Compile Python sources
+        run: python -m compileall -q run_all.py scripts apps/space tests
+
+      - name: Run unit tests
+        run: python -m pytest -q
+
+      - name: Validate experiment runner
+        run: python run_all.py --dry-run
+
+      - name: Smoke-test density analysis
+        run: >-
+          python scripts/densities.py
+          --steps 1000 10000
+          --value-bands 5
+          --band-report-count 1
+
+      - name: Smoke-test forward validation
+        run: >-
+          python scripts/321_210_version_c.py
+          --input-file obstructions.txt
+          --datasets D
+          --blocked-folds 2
+          --n-estimators 10
+          --save-json "${RUNNER_TEMP}/version-c-smoke.json"
+
+      - name: Smoke-test phase-space rendering
+        env:
+          MPLBACKEND: Agg
+        run: >-
+          python scripts/recaman_phase_space_3d.py
+          --steps 100
+          --mode delay
+          --save "${RUNNER_TEMP}/phase-space-smoke.png"
+
+  space-smoke:
+    name: Hugging Face Space smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: apps/space/requirements.txt
+
+      - name: Install Space dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r apps/space/requirements.txt
+
+      - name: Import the Space application
+        run: >-
+          python -c
+          "import sys; sys.path.insert(0, 'apps/space'); import app; assert app.demo is not None"
+
+  deploy-space:
+    name: Deploy Hugging Face Space
+    needs: [python-ci, space-smoke]
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.HF_SPACE_REPO_ID != ''
+    runs-on: ubuntu-latest
+    environment: huggingface-space
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Sync Space application
+        uses: huggingface/hub-sync@v0.1.0
+        with:
+          github_repo_id: ${{ github.repository }}
+          huggingface_repo_id: ${{ vars.HF_SPACE_REPO_ID }}
+          hf_token: ${{ secrets.HF_TOKEN }}
+          repo_type: space
+          space_sdk: gradio
+          subdirectory: apps/space
