@@ -33,7 +33,7 @@ from recaman import MAX_INTERACTIVE_STEPS, MOVE_CHOICES, generate
 
 MEASUREMENTS = load_measurements()
 DEFAULT_CHOICE = next(iter(MOVE_CHOICES))
-REPO_URL = "https://github.com/kugguk2022/recaman_obstructions"
+REPO_URL = "https://github.com/EncapsulatorP/recaman"
 
 # The raw-bit endpoint serialises every term, so it gets a much tighter cap
 # than the plotting path, which only ever returns summary statistics.
@@ -169,7 +169,7 @@ is typed in by hand. Source, methods and the full result set:
 
 
 with gr.Blocks(
-    title="Recaman Next-Move Predictor",
+    title="Recamán Obstruction Lab",
     theme=gr.themes.Soft(),
     analytics_enabled=False,
 ) as demo:

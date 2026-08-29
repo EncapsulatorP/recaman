@@ -1,25 +1,30 @@
 ---
-title: Recaman Next-Move Predictor
+title: Recamán Obstruction Lab
 emoji: 🔁
 colorFrom: blue
-colorTo: yellow
+colorTo: purple
 sdk: gradio
 sdk_version: 5.50.0
 python_version: "3.11"
 app_file: app.py
 license: mit
-pinned: false
-short_description: One-step obstruction-bit baseline for the Recaman sequence
+pinned: true
+suggested_hardware: cpu-basic
+fullWidth: true
+header: mini
+thumbnail: https://raw.githubusercontent.com/EncapsulatorP/recaman/main/outputs/recaman_next_move_infographic.svg
+short_description: Explore Recamán moves and rare phase slips
 tags:
   - mathematics
   - number-theory
   - recaman
   - oeis-a005132
   - time-series
+  - data-visualization
   - reproducible-research
 ---
 
-# Recamán Next-Move Predictor
+# Recamán Obstruction Lab
 
 The Recamán sequence starts at `a(0) = 0` and, at every step `n`, first tries
 the backward move `a(n-1) - n`. It takes that move when the result is positive
@@ -80,7 +85,7 @@ Space is a hand-typed constant, and the figures are generated from the same
 data at request time rather than shipped as images.
 
 Source, methods and the full result set:
-<https://github.com/kugguk2022/recaman_obstructions>
+<https://github.com/EncapsulatorP/recaman>
 
 ## Files
 
