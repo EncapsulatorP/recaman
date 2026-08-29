@@ -32,6 +32,7 @@ from hole_figures import (
 )
 from holes import load_catalogue
 from sequence import walk
+from theme import CSS, brand_theme
 
 
 HERE = Path(__file__).resolve().parent
@@ -39,6 +40,7 @@ RESULTS = json.loads((HERE / "results.json").read_text(encoding="utf-8"))
 MARK = (HERE / "assets" / "online-presence.svg").read_text(encoding="utf-8")
 CATALOGUE = load_catalogue()
 REPO_URL = "https://github.com/kugguk2022/recaman_obstructions"
+PROFILE_URL = "https://github.com/kugguk2022"
 
 WINDOW_WIDTHS = {
     "full span": None,
@@ -222,10 +224,11 @@ a hole, and predicting `b(n)` says nothing about which integers go missing.
 
 with gr.Blocks(
     title=f"Recaman Absolute Holes — {VARIANT}",
-    theme=gr.themes.Soft(),
+    theme=brand_theme(),
+    css=CSS,
     analytics_enabled=False,
 ) as demo:
-    gr.HTML(POSTER_SVG)
+    gr.HTML(POSTER_SVG, elem_id="kg-poster")
 
     with gr.Tabs():
         with gr.Tab("The hole set"):

@@ -2,7 +2,7 @@
 title: Recaman Absolute Holes (Claude.ai version)
 emoji: 🕳️
 colorFrom: blue
-colorTo: gray
+colorTo: purple
 sdk: gradio
 sdk_version: 5.50.0
 python_version: "3.11"
@@ -19,69 +19,135 @@ tags:
   - reproducible-research
 ---
 
-# Recamán Absolute Holes — Claude.ai version
+# 🕳️ Recamán Absolute Holes · Claude.ai version
 
-> This is the **Claude.ai version** of the Recamán obstruction work: a structure
-> explorer for the *hole catalogue*. The rendered infographic carries a matching
-> watermark. It is a **different quantity** from the sibling Space in
-> `apps/space/`, which predicts the process-side obstruction bit `b(n)`.
-> A blocked step is not a hole, and the two must not be confused.
+**The integers Recamán never reaches — and what their shape actually looks like**
+Certified holes · run structure · density across the span · honest model scores
 
-## What an absolute hole is
+[![KuggUK](https://img.shields.io/badge/KuggUK-kugguk.com-0969da)](https://kugguk.com)
+[![Research](https://img.shields.io/badge/Research-EncapsulatorP-6f42c1)](https://encapsulatorp.github.io/)
+[![Source](https://img.shields.io/badge/Source-recaman__obstructions-00859b)](https://github.com/kugguk2022/recaman_obstructions)
+[![Catalogue](https://img.shields.io/badge/Holes-1%2C277%2C399-b14da7)](https://github.com/kugguk2022/recaman_obstructions/blob/main/obstructions.txt)
+[![Best honest AUC](https://img.shields.io/badge/best%20honest%20AUC-0.7586-9e671a)](https://github.com/kugguk2022/recaman_obstructions)
+[![Variant](https://img.shields.io/badge/variant-Claude.ai-10263d)](https://github.com/kugguk2022/recaman_obstructions/tree/main/apps/claude_ai_holes)
 
-The Recamán sequence starts at `a(0) = 0` and, at every step `n`, first tries
-the backward move `a(n-1) - n`. It takes that move when the result is positive
-and unvisited; otherwise it moves forward to `a(n-1) + n`. An integer the
-sequence **never lands on — at any step, ever** — is an absolute hole.
+---
 
-## What this Space shows
+## The question
 
-**The hole set** — how many holes there are, how they distribute across powers
-of ten, how they clump into runs, and how far apart the events sit.
+Recamán starts at `a(0) = 0` and, at every step, tries to jump **backward**:
 
-**Explore the span** — a density strip you can slide across the covered range,
-recomputed from the catalogue for whatever window you choose.
+```text
+a(n) = a(n-1) - n     if that value is positive and not yet visited
+a(n) = a(n-1) + n     otherwise
+```
 
-**What is predictable** — the measured AUCs of the two model pipelines in the
-research repository, on one axis anchored at chance.
+It hops back when it can and forward when it cannot — and it never lands on
+everything. An integer the sequence misses **at every step, forever** is an
+**absolute hole**. This Space is about the shape of that missing set.
 
-**Method and sources** — the rule, the catalogue's provenance and completeness,
-and how this differs from the obstruction-bit Space.
+> 🔭 A different quantity from the sibling Space in `apps/space/`, which predicts
+> the process-side obstruction bit `b(n)`. A blocked step is **not** a hole.
+> Same sequence, different object — the two must not be confused.
 
-## What it does not do
+---
 
-* **No per-number verdict.** This Space will not tell you whether an integer of
-  your choosing is a hole. The honest measured separation tops out at AUC
-  0.7586 — real signal, nowhere near a test — so offering a verdict would
-  misrepresent it.
-* **Nothing outside the covered span.** The catalogue is complete over
-  930,058 – 4,293,242,951 and silent elsewhere. So is everything here.
-* **No proof.** The structural counts are exact over the catalogue; the AUCs
-  are measurements from saved runs.
+## What the catalogue looks like
+
+```text
+1,277,399 integers that Recamán never reaches
+│
+├── 3,102 events           · spanning 930,058 → 4,293,242,951
+│   ├── 2,535 singletons   · a lone missing integer
+│   └──   567 runs         · consecutive missing integers
+│
+├── 97.2% of the mass      · inside just 104 runs of 1,001+
+│   └── longest run        · 368,058 consecutive integers, all missed
+│
+└── density               · 1 integer in 3,360, across the covered span
+```
+
+| 🎨 Tab | What it shows |
+| --- | --- |
+| **The hole set** | counts, run-length structure, gap percentiles, missing integers per power of ten |
+| **Explore the span** | a density strip you slide across the range, recomputed live for any window |
+| **What is predictable** | every measured AUC on one axis, anchored at chance |
+| **Method and sources** | the rule, the provenance, the completeness claim, and the boundary with `b(n)` |
+
+---
+
+## The honest part
+
+| Task | Mean AUC | Reading |
+| --- | ---: | --- |
+| Version C **D** · gap dynamics | `0.7586` | 🟢 the headline — leakage-reduced, forward CV |
+| random-matrix · RF cross-validation | `0.6633` | 🟢 194,358 holes vs digit-matched controls |
+| random-matrix · best linear code | `0.5994` | 🟢 single projection, 42 features |
+| Version C **A / B / C** | `0.99+` | 🟡 easier question — a ceiling, not a result |
+
+**This Space gives no per-number verdict.** Not for your favourite integer, not
+for any integer. A best honest separation of `0.7586` is real signal and
+nowhere near a test, and pretending otherwise would misrepresent the work.
+
+Three more boundaries, stated plainly:
+
+- 🔒 The catalogue is **complete** over `930,058 – 4,293,242,951` — inside that
+  span, an integer that is not listed **is** reached. Outside it, silence.
+- 📏 The structural counts are **exact** over the catalogue. The AUCs are
+  **measurements** from saved runs, not proofs about the sequence.
+- 🧭 The arc picture in *Method and sources* draws the first 40 steps. Nothing
+  in that range is a hole — the smallest one here sits at `930,058`.
+
+---
 
 ## Provenance
 
-`holes.txt` is a verbatim copy of `obstructions.txt` from the research
-repository: Benjamin Chaffin's certified list of values the sequence never
-reaches. Every structural number is recomputed from that file at load time, and
-matches the saved `outputs/version_c_obstructions_results.json` run exactly —
-3,102 events, 2,535 singletons, 567 ranges, longest run 368,058, gaps from 3 to
-128,537,156. `results.json` is projected from the saved runs by
-`scripts/sync_claude_ai_holes.py`. Nothing here is a hand-typed constant.
+Nothing in this Space is a hand-typed constant.
 
-Source, methods and the full result set:
-<https://github.com/kugguk2022/recaman_obstructions>
+```text
+obstructions.txt                    → holes.txt        (verbatim, byte-identical)
+outputs/version_c_*.json            ─┐
+outputs/best_obstructions_*.json    ─┴→ results.json   (scripts/sync_claude_ai_holes.py)
+holes.txt                            → every count on screen, recomputed at load
+```
 
-## Files
+The structural totals are asserted against the saved
+`outputs/version_c_obstructions_results.json` run by the test suite — events,
+singletons, ranges, longest run, span endpoints, gap min/max — so the Space
+cannot drift from the research that produced it. The hole catalogue itself is
+Benjamin Chaffin's certified list of values the sequence never reaches.
 
-| file | role |
+| File | Role |
 | --- | --- |
 | `app.py` | Gradio interface |
 | `holes.py` | catalogue parsing and structural summaries |
 | `hole_figures.py` | SVG figures and the watermarked poster |
+| `theme.py` | the Repo Galaxy palette, shared with the figures |
 | `sequence.py` | a short Recamán walk, for the arc picture only |
 | `holes.txt` | the hole catalogue, synced verbatim |
 | `results.json` | measured model scores, synced from `outputs/` |
+
+---
+
+## Look and feel
+
+Palette lifted from the **Repo Galaxy** artwork on the
+[kugguk2022](https://github.com/kugguk2022) profile — neon cyan `#22e0ff` and
+amber `#ffb457` over deep-space navy `#07101a`, with magenta and green as
+supporting accents. Figures and interface share one token set, so the SVG and
+the Gradio chrome are a single design.
+
+Colour never carries meaning on its own: exactly two hues encode anything, and
+every mark is labelled beside its swatch. Both data slots clear the
+colour-vision and contrast checks in light and dark.
+
+---
+
+## Elsewhere
+
+- **Research:** [encapsulatorp.github.io](https://encapsulatorp.github.io/) · [github.com/EncapsulatorP](https://github.com/EncapsulatorP)
+- **Umbrella:** [kugguk.com](https://kugguk.com)
+- **This repo:** [recaman_obstructions](https://github.com/kugguk2022/recaman_obstructions)
 
 ## License
 

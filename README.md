@@ -16,19 +16,24 @@ The strongest current process-side conclusion is simple:
 
 That is a stronger empirical statement than the geometric story at the moment. The geometric / phase-slip framing remains useful as an exploratory language for where the rare defects occur, but the local closure problem for those defect locations is still open.
 
-## Snapshot: the value side (absolute holes)
+## 🕳️ Snapshot: the value side (absolute holes)
+
+[![Holes](https://img.shields.io/badge/certified%20holes-1%2C277%2C399-b14da7)](obstructions.txt)
+[![Span](https://img.shields.io/badge/span-930%2C058%20%E2%86%92%204.29e9-00859b)](obstructions.txt)
+[![Concentration](https://img.shields.io/badge/97.2%25%20in-104%20runs-9e671a)](outputs/version_c_obstructions_results.json)
+[![Best honest AUC](https://img.shields.io/badge/best%20honest%20AUC-0.7586-0969da)](outputs/version_c_obstructions_results.json)
 
 ![The integers Recaman never reaches: the rule, where the missing integers sit, how they clump into runs, and the measured separation from matched controls](outputs/recaman_holes_infographic_claude-ai.svg)
 
 The value-side subject of this repo: the `1,277,399` integers in [`obstructions.txt`](obstructions.txt) that the sequence never reaches, between `930,058` and `4,293,242,951`. Rebuild with `python scripts/make_claude_ai_holes_infographic.py`; every number is recomputed from the catalogue and from the saved runs in [`outputs/`](outputs/), and the structural totals are asserted against [`outputs/version_c_obstructions_results.json`](outputs/version_c_obstructions_results.json) by the test suite. CI fails if the file drifts.
 
-## Snapshot: the process side (obstruction bit)
+## 🔁 Snapshot: the process side (obstruction bit)
 
 ![Predicting Recaman's next move: the rule, the measured transition, a real phase slip, and the slip rate falling with the horizon](outputs/recaman_next_move_infographic.svg)
 
 A **different label on a different object**: the process-side bit `b(n)`, whether the backward move was blocked at step `n`. A blocked step is not a hole, and predicting `b(n)` says nothing about which integers go missing. Rebuild with `python scripts/make_infographic.py`.
 
-## Live Demos
+## 🚀 Live Demos
 
 Two Gradio apps, deployed to separate Hugging Face Spaces:
 

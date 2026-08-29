@@ -4,10 +4,19 @@ Everything here emits SVG text. There is no raster asset and no plotting
 dependency: this Space ships plain standard-library Python, the output stays
 crisp at any zoom, and it re-colours itself for light and dark viewers.
 
-Colour is used for one thing only, and never alone: the validated blue/orange
-categorical pair separates the sequence's two move directions in the arc
-diagram, and separates leakage-reduced from easier tasks in the score chart.
-Every label wears an ink token and sits beside a coloured mark.
+Colour follows the kugguk2022 house style — the neon-on-deep-space palette of
+the Repo Galaxy artwork — without letting decoration touch the data channel.
+Exactly two hues encode anything: brand cyan and brand amber separate the two
+move directions in the arc diagram and the leakage-reduced from the easier
+tasks in the score chart. Every label still wears an ink token and sits beside
+a coloured mark, so identity is never carried by colour alone.
+
+Both data slots clear the data-viz palette checks (chroma, CVD separation,
+normal-vision separation, contrast) in both modes. One documented deviation:
+in dark mode the two slots keep the brand's own brightness, which sits above
+the checker's dark lightness band. That band is tuned to a lighter reference
+surface than this palette's `#07101a`, and every reader-safety check still
+passes, so the brand values are kept rather than dulled.
 
 The module name and the watermark keep this variant distinct from the
 next-move Space in `apps/space/`, which reports a different quantity entirely.
@@ -26,31 +35,55 @@ VARIANT = "Claude.ai version"
 FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
 MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
 
-TOKENS_LIGHT = {
-    "surface": "#fcfcfb",
-    "plane": "#f9f9f7",
-    "ink": "#0b0b0b",
-    "ink2": "#52514e",
-    "muted": "#898781",
-    "grid": "#e1e0d9",
-    "axis": "#c3c2b7",
-    "primary": "#2a78d6",
-    "accent": "#eb6834",
-    "ring": "rgba(11,11,11,0.10)",
-}
-TOKENS_DARK = {
-    "surface": "#1a1a19",
-    "plane": "#0d0d0d",
-    "ink": "#ffffff",
-    "ink2": "#c3c2b7",
-    "muted": "#898781",
-    "grid": "#2c2c2a",
-    "axis": "#383835",
-    "primary": "#3987e5",
-    "accent": "#d95926",
-    "ring": "rgba(255,255,255,0.10)",
+# Palette taken from the kugguk2022 "Repo Galaxy" artwork: neon on deep space.
+# Data marks use only two slots — brand cyan and brand amber — because the
+# figures only ever separate two things. The remaining brand hues are chrome:
+# panel kickers and rules, never an encoding, so nothing rides on telling them
+# apart. The two data slots were validated with the data-viz palette checker
+# (see the module docstring for the one documented deviation).
+BRAND = {
+    "cyan": "#22e0ff",
+    "amber": "#ffb457",
+    "magenta": "#ff3df0",
+    "blue": "#4d8dff",
+    "rose": "#ff6b8f",
+    "green": "#43ff9e",
 }
 
+TOKENS_LIGHT = {
+    "surface": "#f8f7f2",
+    "plane": "#ffffff",
+    "ink": "#171510",
+    "ink2": "#3f4a55",
+    "muted": "#5d6b7a",
+    "grid": "#e4e6e2",
+    "axis": "#c7ccc9",
+    "primary": "#008eab",
+    "accent": "#ae6800",
+    "chrome-1": "#008eab",
+    "chrome-2": "#b14da7",
+    "chrome-3": "#ae6800",
+    "chrome-4": "#00964b",
+    "ring": "rgba(23,21,16,0.12)",
+    "glow": "rgba(0,142,171,0.00)",
+}
+TOKENS_DARK = {
+    "surface": "#07101a",
+    "plane": "#10263d",
+    "ink": "#e6f4ff",
+    "ink2": "#dceeff",
+    "muted": "#8da6bf",
+    "grid": "#173654",
+    "axis": "#2a4a6b",
+    "primary": "#22e0ff",
+    "accent": "#ffb457",
+    "chrome-1": "#22e0ff",
+    "chrome-2": "#ff3df0",
+    "chrome-3": "#ffb457",
+    "chrome-4": "#43ff9e",
+    "ring": "rgba(34,224,255,0.22)",
+    "glow": "rgba(34,224,255,0.55)",
+}
 
 def _vars(tokens: dict[str, str]) -> str:
     return "".join(f"--rc-{name}:{value};" for name, value in tokens.items())
@@ -60,11 +93,15 @@ STYLE = (
     ".rch{" + _vars(TOKENS_LIGHT) + "font-family:" + FONT + ";}"
     "@media (prefers-color-scheme: dark){.rch{" + _vars(TOKENS_DARK) + "}}"
     ".rch .plane{fill:var(--rc-surface);}"
+    ".rch .rule{fill:url(#brandRule);}"
     ".rch .card{fill:var(--rc-plane);stroke:var(--rc-ring);stroke-width:1;}"
     ".rch text{fill:var(--rc-ink2);}"
     ".rch .h1{fill:var(--rc-ink);font-size:38px;font-weight:700;letter-spacing:-0.5px;}"
     ".rch .h2{fill:var(--rc-ink2);font-size:16px;}"
-    ".rch .kicker{fill:var(--rc-muted);font-size:11px;font-weight:700;letter-spacing:1.5px;}"
+    ".rch .kicker{font-size:11px;font-weight:700;letter-spacing:1.5px;}"
+    ".rch .k1{fill:var(--rc-chrome-1);} .rch .k2{fill:var(--rc-chrome-2);}"
+    ".rch .k3{fill:var(--rc-chrome-3);} .rch .k4{fill:var(--rc-chrome-4);}"
+    ".rch .k0{fill:var(--rc-muted);}"
     ".rch .title{fill:var(--rc-ink);font-size:16px;font-weight:600;}"
     ".rch .body{fill:var(--rc-ink2);font-size:13.5px;}"
     ".rch .small{fill:var(--rc-muted);font-size:12px;}"
@@ -74,8 +111,9 @@ STYLE = (
     ".rch .mono{font-family:" + MONO + ";font-size:13px;fill:var(--rc-ink);}"
     ".rch .grid{stroke:var(--rc-grid);stroke-width:1;fill:none;}"
     ".rch .axis{stroke:var(--rc-axis);stroke-width:1;fill:none;}"
-    ".rch .stamp{fill:var(--rc-muted);font-size:10px;font-weight:700;letter-spacing:1.4px;}"
-    ".rch .stamp-box{fill:none;stroke:var(--rc-axis);stroke-width:1;}"
+    ".rch .stamp{fill:var(--rc-chrome-1);font-size:10px;font-weight:700;letter-spacing:1.4px;}"
+    ".rch .stamp-box{fill:none;stroke:var(--rc-chrome-1);stroke-width:1;opacity:0.55;}"
+    ".rch .glow{filter:drop-shadow(0 0 6px var(--rc-glow));}"
 )
 
 
@@ -88,6 +126,11 @@ def svg_document(body: str, width: float, height: float, title: str) -> str:
         f'role="img" aria-label="{escape(labelled)}" '
         'preserveAspectRatio="xMidYMid meet" class="rch">'
         f"<style>{STYLE}</style>"
+        "<defs><linearGradient id=\"brandRule\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\">"
+        '<stop offset="0" stop-color="var(--rc-chrome-1)"/>'
+        '<stop offset="0.5" stop-color="var(--rc-chrome-2)"/>'
+        '<stop offset="1" stop-color="var(--rc-chrome-3)"/>'
+        "</linearGradient></defs>"
         f"<title>{escape(labelled)}</title>"
         f'<rect class="plane" x="0" y="0" width="{_n(width)}" height="{_n(height)}"/>'
         f"{body}</svg>"
@@ -99,9 +142,11 @@ def watermark(x: float, y: float, anchor: str = "end") -> str:
     box_w, box_h = 132.0, 20.0
     box_x = x - box_w if anchor == "end" else x
     return (
+        '<g class="glow">'
         f'<rect class="stamp-box" x="{_n(box_x)}" y="{_n(y - box_h / 2)}" '
         f'width="{_n(box_w)}" height="{_n(box_h)}" rx="10"/>'
         + _text(box_x + box_w / 2, y + 4, VARIANT.upper(), "stamp", "middle")
+        + "</g>"
     )
 
 
@@ -128,6 +173,18 @@ def _text(
     )
 
 
+def _rule(x: float, y: float, width: float, height: float = 2.5) -> str:
+    """A brand-gradient rule.
+
+    Drawn as a rect, not a line: a horizontal line has a zero-height bounding
+    box, and an objectBoundingBox gradient collapses to nothing on it.
+    """
+    return (
+        f'<rect class="rule" x="{_n(x)}" y="{_n(y - height / 2)}" '
+        f'width="{_n(width)}" height="{_n(height)}" rx="{_n(height / 2)}"/>'
+    )
+
+
 def _card(x: float, y: float, w: float, h: float) -> str:
     return (
         f'<rect class="card" x="{_n(x)}" y="{_n(y)}" '
@@ -142,8 +199,11 @@ def _swatch(x: float, y: float, role: str, label: str) -> str:
     )
 
 
-def _panel_head(x: float, y: float, kicker: str, title: str) -> str:
-    return _text(x, y, kicker, "kicker") + _text(x, y + 22, title, "title")
+def _panel_head(x: float, y: float, kicker: str, title: str, slot: int = 0) -> str:
+    """A panel heading. `slot` picks a brand hue for the kicker — decoration
+    only: the kicker text never encodes anything, so nothing depends on
+    telling the hues apart."""
+    return _text(x, y, kicker, f"kicker k{slot}") + _text(x, y + 22, title, "title")
 
 
 def _paragraph(
@@ -513,8 +573,12 @@ def poster(catalogue: HoleCatalogue, results: dict, walk: tuple) -> str:
     parts: list[str] = []
 
     # --- title band --------------------------------------------------------
-    parts.append(_text(40, 52, "RECAMÁN OBSTRUCTIONS · THE HOLE CATALOGUE", "kicker"))
-    parts.append(_text(40, 92, "The integers Recamán never reaches", "h1"))
+    parts.append(_text(40, 52, "RECAMÁN OBSTRUCTIONS · THE HOLE CATALOGUE", "kicker k1"))
+    parts.append(
+        '<g class="glow">'
+        + _text(40, 92, "The integers Recamán never reaches", "h1")
+        + "</g>"
+    )
     parts.append(
         _text(
             40,
@@ -526,12 +590,12 @@ def poster(catalogue: HoleCatalogue, results: dict, walk: tuple) -> str:
     )
     parts.append(watermark(POSTER_WIDTH - 40, 52))
     parts.append(
-        f'<line class="axis" x1="40" y1="140" x2="{_n(POSTER_WIDTH - 40)}" y2="140"/>'
+        _rule(40, 140, POSTER_WIDTH - 80)
     )
 
     # --- 1 · what a hole is ------------------------------------------------
     parts.append(_card(36, 158, 552, 344))
-    parts.append(_panel_head(60, 190, "1 · WHAT A HOLE IS", "A value the sequence never lands on"))
+    parts.append(_panel_head(60, 190, "1 · WHAT A HOLE IS", "A value the sequence never lands on", 1))
     for offset, line in enumerate(
         (
             "a(0) = 0",
@@ -559,8 +623,10 @@ def poster(catalogue: HoleCatalogue, results: dict, walk: tuple) -> str:
 
     # --- 2 · how many, and where -------------------------------------------
     parts.append(_card(612, 158, 552, 344))
-    parts.append(_panel_head(636, 190, "2 · WHERE THEY SIT", "Missing integers by magnitude"))
-    parts.append(_text(636, 262, f"{catalogue.coverage:.4%}", "hero"))
+    parts.append(_panel_head(636, 190, "2 · WHERE THEY SIT", "Missing integers by magnitude", 2))
+    parts.append(
+        _text(636, 262, f"{catalogue.coverage:.4%}", "hero", extra=' fill="var(--rc-chrome-2)"')
+    )
     parts.append(
         _paragraph(
             636,
@@ -582,9 +648,11 @@ def poster(catalogue: HoleCatalogue, results: dict, walk: tuple) -> str:
     # --- 3 · they arrive in runs -------------------------------------------
     parts.append(_card(36, 522, 1128, 214))
     parts.append(
-        _panel_head(60, 554, "3 · THEY ARRIVE IN RUNS", "Almost all of the mass is in 104 events")
+        _panel_head(60, 554, "3 · THEY ARRIVE IN RUNS", "Almost all of the mass is in 104 events", 3)
     )
-    parts.append(_text(60, 626, f"{concentration:.1%}", "hero"))
+    parts.append(
+        _text(60, 626, f"{concentration:.1%}", "hero", extra=' fill="var(--rc-chrome-3)"')
+    )
     parts.append(
         _paragraph(
             60,
@@ -603,7 +671,7 @@ def poster(catalogue: HoleCatalogue, results: dict, walk: tuple) -> str:
     # --- 4 · what is predictable -------------------------------------------
     parts.append(_card(36, 756, 744, 202))
     parts.append(
-        _panel_head(60, 788, "4 · WHAT IS PREDICTABLE", "Measured separation from matched controls")
+        _panel_head(60, 788, "4 · WHAT IS PREDICTABLE", "Measured separation from matched controls", 4)
     )
     parts.append(_swatch(408, 788, "primary", "leakage-reduced task"))
     parts.append(_swatch(596, 788, "accent", "easier task"))
@@ -634,8 +702,7 @@ def poster(catalogue: HoleCatalogue, results: dict, walk: tuple) -> str:
 
     # --- footer ------------------------------------------------------------
     parts.append(
-        f'<line class="axis" x1="40" y1="{_n(POSTER_HEIGHT - 32)}" '
-        f'x2="{_n(POSTER_WIDTH - 40)}" y2="{_n(POSTER_HEIGHT - 32)}"/>'
+        _rule(40, POSTER_HEIGHT - 32, POSTER_WIDTH - 80, 2.0)
     )
     parts.append(
         _text(
