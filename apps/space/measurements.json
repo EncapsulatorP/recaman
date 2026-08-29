@@ -1,0 +1,61 @@
+{
+  "source": "outputs/recaman_wheel_results.json",
+  "generator": "scripts/build_space_measurements.py",
+  "empirical_horizon": 10000000,
+  "transition": {
+    "p00": 0.001081,
+    "p01": 0.998919,
+    "p10": 0.998913,
+    "p11": 0.001087
+  },
+  "stationary": {
+    "p_b0": 0.499999,
+    "p_b1": 0.500001
+  },
+  "phase_slip": {
+    "rate": 0.001084,
+    "count": 10839,
+    "pairs": 9999999,
+    "mean_run_length": 415.0239
+  },
+  "horizon_scan": [
+    {
+      "n": 10000,
+      "q_prev0": 0.977764,
+      "q_prev1": 0.025165,
+      "slip_rate": 0.023702843
+    },
+    {
+      "n": 100000,
+      "q_prev0": 0.990098,
+      "q_prev1": 0.010278,
+      "slip_rate": 0.010090038
+    },
+    {
+      "n": 1000000,
+      "q_prev0": 0.996598,
+      "q_prev1": 0.003448,
+      "slip_rate": 0.003425001
+    },
+    {
+      "n": 5000000,
+      "q_prev0": 0.99861,
+      "q_prev1": 0.001401,
+      "slip_rate": 0.0013955
+    },
+    {
+      "n": 10000000,
+      "q_prev0": 0.998919,
+      "q_prev1": 0.001087,
+      "slip_rate": 0.001084
+    }
+  ],
+  "theta3_wheel": {
+    "verdict": "FALSIFIED",
+    "abs_delta_q": 1.1e-05
+  },
+  "accuracy": {
+    "majority_baseline": 0.5,
+    "previous_bit_only": 0.99645
+  }
+}
