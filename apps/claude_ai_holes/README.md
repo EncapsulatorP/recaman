@@ -9,7 +9,7 @@ python_version: "3.11"
 app_file: app.py
 license: mit
 pinned: false
-short_description: Lossless compression experiments on Recamán holes and phase slips
+short_description: Lossless compression of Recamán holes and phase slips
 tags:
   - mathematics
   - number-theory
