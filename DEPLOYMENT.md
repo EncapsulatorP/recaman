@@ -14,44 +14,59 @@ The GitHub Actions workflow in `.github/workflows/ci-cd.yml` runs:
   Space card, imports the app and exercises both API endpoints;
 - guarded deployment to Hugging Face after all CI jobs pass on `main`.
 
+## The two Spaces
+
+The repository ships two independent Gradio apps, because it studies two
+different things and they must not be confused:
+
+| directory | subject | HF repo variable |
+| --- | --- | --- |
+| `apps/space/` | the process-side obstruction bit `b(n)` | `HF_SPACE_REPO_ID` |
+| `apps/claude_ai_holes/` | the absolute holes — integers never reached (**Claude.ai version**) | `HF_HOLES_SPACE_REPO_ID` |
+
+Each is deployed on its own, with its directory as the Space root, so its
+modules are top-level there (`import predictor`, not `import apps.space.predictor`).
+`tests/conftest.py` puts both directories on `sys.path`; their module names are
+deliberately distinct so they can coexist. Both depend on Gradio alone — the
+figures are SVG generated at request time, so there is no plotting stack and no
+image asset to keep in sync.
+
+The Claude.ai holes assets carry a `CLAUDE.AI VERSION` watermark, in the poster
+and in the Space card, so the two variants stay tellable apart wherever they end
+up.
+
 ## Regenerating the derived files
 
-Two files in the tree are generated, and CI fails if they drift:
+Four files in the tree are generated, and CI fails if any drifts:
 
 ```bash
-python scripts/build_space_measurements.py   # apps/space/measurements.json
-python scripts/make_infographic.py           # outputs/recaman_next_move_infographic.svg
+python scripts/build_space_measurements.py            # apps/space/measurements.json
+python scripts/make_infographic.py                    # outputs/recaman_next_move_infographic.svg
+python scripts/sync_claude_ai_holes.py                # apps/claude_ai_holes/{holes.txt,results.json,assets/}
+python scripts/make_claude_ai_holes_infographic.py    # outputs/recaman_holes_infographic_claude-ai.svg
 ```
 
-Both read `outputs/recaman_wheel_results.json`, so re-run them whenever the
-validator run is refreshed. Add `--check` to either to verify without writing,
-which is what CI does.
-
-## The Space
-
-`apps/space/` is deployed on its own, with that directory as the Space root.
-Its modules are therefore top-level there (`import predictor`, not
-`import apps.space.predictor`); `tests/conftest.py` puts the same directory on
-`sys.path` so the tests exercise the deployed layout. The Space depends on
-Gradio alone — the figures are SVG generated at request time, so there is no
-plotting stack and no image asset to keep in sync.
+The first two read `outputs/recaman_wheel_results.json`; the last two read
+`obstructions.txt` plus the saved Version C and random-matrix runs. Re-run the
+relevant pair whenever a run is refreshed. Add `--check` to any of them to
+verify without writing, which is what CI does.
 
 ### Bumping the Gradio pin
 
-The version appears in two places and CI asserts they agree:
+Each Space pins the version in two places, and CI asserts the pair agrees:
 
-1. `apps/space/requirements.txt` — `gradio==5.50.0`
-2. `apps/space/README.md` — `sdk_version: 5.50.0`
+1. `<space>/requirements.txt` — `gradio==5.50.0`
+2. `<space>/README.md` — `sdk_version: 5.50.0`
 
-Change both together, then run the Space job locally if you can. Moving across
-a major version (5 → 6) is a breaking change for the SDK and should be its own
-commit.
+Change both together, then run that Space's smoke job locally if you can.
+Moving across a major version (5 → 6) is a breaking change for the SDK and
+should be its own commit.
 
 ### Licensing
 
-The repository is MIT-licensed ([`LICENSE`](LICENSE)), and the Space card
-declares `license: mit` to match. If the root licence ever changes, change the
-card's `license:` key in the same commit.
+The repository is MIT-licensed ([`LICENSE`](LICENSE)), and both Space cards
+declare `license: mit` to match. If the root licence ever changes, change both
+cards' `license:` keys in the same commit.
 
 ## Enable Hugging Face deployment
 
@@ -64,8 +79,9 @@ card's `license:` key in the same commit.
    `huggingface-space` GitHub environment.
 5. Push to `main`, or run the workflow manually after merging a tested change.
 
-If `HF_SPACE_REPO_ID` is absent, deployment is skipped while CI continues to
-run normally.
+Repeat with `HF_HOLES_SPACE_REPO_ID` for the Claude.ai holes Space; the two
+deploy jobs are independent. If a variable is absent, that deployment is
+skipped while CI continues to run normally.
 
 ## PyPI publishing
 
