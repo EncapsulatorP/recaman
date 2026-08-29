@@ -55,6 +55,9 @@ jobs:
       - name: Verify Obstruction and Tower Space data is current
         run: python scripts/build_obstruction_tower_space.py --check
 
+      - name: Verify weekly Agent Arena ledger is current
+        run: python scripts/run_weekly_arena.py --check
+
       - name: Verify the infographic matches the saved run
         run: python scripts/make_infographic.py --check
 
@@ -133,6 +136,9 @@ jobs:
           assert app.simulate_bits(64)['steps'] == 64;
           arena_svg, arena_report, arena = app.inspect_model_arena(20000, 3, 210);
           assert arena_svg.startswith('<svg') and arena_report and arena['test_steps'] > 0;
+          revealed, replay_plot, replay_score, replay_card, replay = app.inspect_replay(20000, 3, 210, 64);
+          assert revealed == 64 and not replay_plot.empty and not replay_score.empty;
+          assert replay_card.startswith('<section') and replay['hidden_remaining'] > 0;
           tower_svg, tower_report, tower = app.inspect_signed_tower(2000);
           assert tower_svg.startswith('<svg') and tower['identity_verified'] and tower_report;
           power_svg, power_report, power = app.inspect_power_probe(3, 210, 64);
@@ -179,8 +185,8 @@ jobs:
           assert app.CATALOGUE.event_count == 3102;
           strip, report = app.explore('full span', 0);
           assert strip.startswith('<svg') and '1,277,399' in report;
-          catalogue_svg, process_svg, compression_report, compression = app.compression_experiment(20000);
-          assert catalogue_svg.startswith('<svg') and process_svg.startswith('<svg');
+          catalogue_plot, process_plot, compression_report, compression = app.compression_experiment(20000);
+          assert not catalogue_plot.empty and not process_plot.empty;
           assert compression['catalogue']['event_round_trip'] and compression_report;
           assert '1,277,399' in app.overview()"
 

@@ -37,6 +37,7 @@ from hole_figures import (
     svg_document,
 )
 from holes import HoleEvent, load_catalogue, parse
+from interactive_figures import benchmark_frame, catalogue_map_frame, phase_scope
 from sequence import walk
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -205,6 +206,24 @@ def test_compression_figure_is_well_formed(catalogue) -> None:
     payload = catalogue_benchmark(catalogue, (SPACE_DIR / "holes.txt").read_bytes())
     root = _parse(compression_bars(payload, "Compression test"))
     assert root.get("role") == "img"
+
+
+def test_interactive_compression_views_keep_exact_hover_values(catalogue) -> None:
+    payload = catalogue_benchmark(catalogue, (SPACE_DIR / "holes.txt").read_bytes())
+    score = benchmark_frame(payload)
+    event_map = catalogue_map_frame(catalogue)
+    assert len(score) == len(payload["rows"])
+    assert set(score["round trip"]) == {"exact"}
+    assert len(event_map) == catalogue.event_count
+    assert {"singleton", "range", "long range"} == set(event_map["kind"])
+
+
+def test_phase_scope_is_interactive_and_exact() -> None:
+    svg, report = phase_scope(50_000, 128)
+    root = _parse(svg)
+    assert root.get("role") == "img"
+    assert "phase slips" in svg
+    assert "reconstructed from the sign stream" in report
 
 
 # --- figures ---------------------------------------------------------------
