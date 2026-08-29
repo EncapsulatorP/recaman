@@ -22,9 +22,9 @@ patterns survive honest validation.
 > **Research status:** this is empirical work, not a proof that any integer is
 > absent forever. Here, a *catalogued hole* means membership in
 > [`obstructions.txt`](obstructions.txt). The catalogue is evidence for
-> candidate absolute obstructions—or, conservatively, long-lasting unvisited
-> values. Its source computation and verification horizon still need to be
-> recorded before stronger claims can be audited.
+> candidate absolute obstructions. It is Benjamin Chaffin's published list of
+> holes below `2^32` after computing beyond `10^612` terms; that result is a
+> verified frontier, not a resumable checkpoint included in this repository.
 
 ## Two questions, two meanings
 
@@ -35,6 +35,11 @@ patterns survive honest validation.
 
 A blocked step is not a missing integer. Predicting `b(n)` does not identify
 which values are permanently absent.
+
+## Live experiments
+
+- [Recamán Obstruction Compression Lab](https://huggingface.co/spaces/kugguk/recaman-obstruction-lab) — lossless range/delta codecs, phase-slip encoding and exact round-trip checks.
+- [Recamán Next-Move Model Lab](https://huggingface.co/spaces/kugguk/recaman-next-move) — inferred agents, chronological holdouts, tower/modular ablations and predictive code length.
 
 ## Current picture
 

@@ -19,7 +19,8 @@ import json
 from pathlib import Path
 
 import gradio as gr
-
+from compression_figures import compression_bars
+from compression_lab import catalogue_benchmark, process_benchmark
 from hole_figures import (
     VARIANT,
     arc_diagram,
@@ -34,12 +35,12 @@ from holes import load_catalogue
 from sequence import walk
 from theme import CSS, brand_theme
 
-
 HERE = Path(__file__).resolve().parent
 RESULTS = json.loads((HERE / "results.json").read_text(encoding="utf-8"))
 MARK = (HERE / "assets" / "online-presence.svg").read_text(encoding="utf-8")
 CATALOGUE = load_catalogue()
-REPO_URL = "https://github.com/kugguk2022/recaman_obstructions"
+CATALOGUE_COMPRESSION = catalogue_benchmark(CATALOGUE, (HERE / "holes.txt").read_bytes())
+REPO_URL = "https://github.com/EncapsulatorP/recaman"
 PROFILE_URL = "https://github.com/kugguk2022"
 
 WINDOW_WIDTHS = {
@@ -151,6 +152,58 @@ def explore(window_label: str, position: float) -> tuple[str, str]:
     return strip, report
 
 
+def compression_experiment(steps: int) -> tuple[str, str, str, dict]:
+    """Run both exact compression scoreboards and expose their audit payload."""
+    process = process_benchmark(steps)
+    catalogue_figure = compression_bars(
+        CATALOGUE_COMPRESSION,
+        "Chaffin hole catalogue: expanded values vs range-aware codecs",
+    )
+    process_figure = compression_bars(
+        process,
+        f"Obstruction-bit stream through n = {process['steps']:,}",
+    )
+    catalogue_best = CATALOGUE_COMPRESSION["best"]
+    process_best = process["best"]
+    model = process["held_out_model"]
+    report = f"""
+## Compression is the experiment
+
+The hole set contains **{CATALOGUE_COMPRESSION['integer_count']:,} integers**, but only
+**{CATALOGUE_COMPRESSION['event_count']:,} consecutive-range events**. The best tested
+lossless representation stores the same set in **{catalogue_best['bytes']:,} bytes**:
+**{catalogue_best['ratio']:.1f}× smaller** than an expanded uint32 list. Its decoder
+reconstructs every event exactly.
+
+For the live process prefix, the obstruction stream has **{process['phase_slips']:,}
+phase slips** in {process['steps']:,} steps. The best serialized codec here is
+**{process_best['name']}** at **{process_best['bytes']:,} bytes**, or
+**{process_best['ratio']:.1f}× smaller** than storing one byte per bit. Decoding the
+sign stream reconstructs the exact final term **a({process['steps']:,}) =
+{process['final_term']:,}**.
+
+### Predictive compression, scored out of sample
+
+The near-alternation probability is estimated on the first
+{model['train_steps']:,} steps and frozen before encoding the final
+{model['test_steps']:,}. Its ideal arithmetic-code bound is
+**{model['bits_per_step']:.4f} bits/step**, versus **1.0000** for an uninformed binary
+code—a theoretical saving of **{model['theoretical_saving']:.2%}**.
+
+That is the clean connection to the model arena: a model earns influence only when it
+shortens held-out data. A tower feature that looks dramatic but cannot save bits loses
+to the Skeptic.
+
+> General-purpose codec sizes are actual serialized bytes. The model code length is an
+> information-theoretic arithmetic-coding bound and is labelled separately.
+"""
+    payload = {
+        "catalogue": CATALOGUE_COMPRESSION,
+        "process": process,
+    }
+    return catalogue_figure, process_figure, report, payload
+
+
 PREDICTABLE = f"""
 ### What the models actually score
 
@@ -223,18 +276,48 @@ a hole, and predicting `b(n)` says nothing about which integers go missing.
 
 
 with gr.Blocks(
-    title=f"Recaman Absolute Holes — {VARIANT}",
+    title="Recamán Obstruction Compression Lab",
     theme=brand_theme(),
     css=CSS,
     analytics_enabled=False,
 ) as demo:
     gr.HTML(POSTER_SVG, elem_id="kg-poster")
 
-    with gr.Tabs():
+    with gr.Tabs(selected="compression"):
         with gr.Tab("The hole set"):
             gr.Markdown(overview())
             gr.Markdown("#### Missing integers per power-of-ten band")
             gr.HTML(DECADE_SVG)
+
+        with gr.Tab("Compression engine", id="compression"):
+            gr.Markdown(
+                "Treat every claimed pattern as a coding proposal. Range structure compresses "
+                "the hole catalogue; phase-slip structure compresses the process stream; held-out "
+                "code length decides whether an inferred model discovered anything reusable."
+            )
+            compression_steps = gr.Slider(
+                minimum=1_000,
+                maximum=200_000,
+                value=100_000,
+                step=1_000,
+                label="Exact Recamán prefix to encode",
+            )
+            compression_button = gr.Button("Run lossless compression race", variant="primary")
+            catalogue_compression_view = gr.HTML()
+            process_compression_view = gr.HTML()
+            compression_report = gr.Markdown()
+            compression_payload = gr.JSON(label="Codec audit payload")
+            compression_button.click(
+                fn=compression_experiment,
+                inputs=compression_steps,
+                outputs=[
+                    catalogue_compression_view,
+                    process_compression_view,
+                    compression_report,
+                    compression_payload,
+                ],
+                api_name="compression_experiment",
+            )
 
         with gr.Tab("Explore the span"):
             gr.Markdown(
@@ -275,6 +358,16 @@ with gr.Blocks(
     gr.HTML(f'<div style="max-width:180px">{MARK}</div>')
 
     demo.load(fn=explore, inputs=explore_inputs, outputs=explore_outputs)
+    demo.load(
+        fn=compression_experiment,
+        inputs=compression_steps,
+        outputs=[
+            catalogue_compression_view,
+            process_compression_view,
+            compression_report,
+            compression_payload,
+        ],
+    )
 
 
 if __name__ == "__main__":

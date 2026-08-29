@@ -1,6 +1,6 @@
 ---
-title: Recaman Absolute Holes (Claude.ai version)
-emoji: 🕳️
+title: Recamán Obstruction Compression Lab
+emoji: 🗜️
 colorFrom: blue
 colorTo: purple
 sdk: gradio
@@ -9,7 +9,7 @@ python_version: "3.11"
 app_file: app.py
 license: mit
 pinned: false
-short_description: Structure of the integers the Recaman sequence never reaches
+short_description: Lossless compression experiments on Recamán holes and phase slips
 tags:
   - mathematics
   - number-theory
@@ -19,10 +19,10 @@ tags:
   - reproducible-research
 ---
 
-# 🕳️ Recamán Absolute Holes · Claude.ai version
+# 🗜️ Recamán Obstruction Compression Lab
 
-**The integers Recamán never reaches — and what their shape actually looks like**
-Certified holes · run structure · density across the span · honest model scores
+**How many bits does Recamán's structure really save?**
+Certified holes · range codecs · phase-slip codes · held-out predictive compression
 
 [![KuggUK](https://img.shields.io/badge/KuggUK-kugguk.com-0969da)](https://kugguk.com)
 [![Research](https://img.shields.io/badge/Research-EncapsulatorP-6f42c1)](https://encapsulatorp.github.io/)
@@ -70,6 +70,7 @@ everything. An integer the sequence misses **at every step, forever** is an
 | 🎨 Tab | What it shows |
 | --- | --- |
 | **The hole set** | counts, run-length structure, gap percentiles, missing integers per power of ten |
+| **Compression engine** | expanded values versus range/delta/general codecs, all with exact round-trip checks |
 | **Explore the span** | a density strip you slide across the range, recomputed live for any window |
 | **What is predictable** | every measured AUC on one axis, anchored at chance |
 | **Method and sources** | the rule, the provenance, the completeness claim, and the boundary with `b(n)` |
@@ -77,6 +78,19 @@ everything. An integer the sequence misses **at every step, forever** is an
 ---
 
 ## The honest part
+
+Compression supplies a hard falsifiable target. A structural claim matters only when
+it shortens an exact encoding or reduces held-out code length. The Space compares:
+
+- expanded uint32 hole values;
+- fixed-width interval endpoints;
+- delta-varint range events;
+- zlib, bzip2, and LZMA controls;
+- packed process bits and a phase-slip delta codec;
+- a train/frozen-test ideal arithmetic-code bound for the inferred alternation model.
+
+Every custom serialized codec is decoded before its result is displayed, and the
+decoded obstruction signs must reconstruct the exact final Recamán term.
 
 | Task | Mean AUC | Reading |
 | --- | ---: | --- |

@@ -52,6 +52,9 @@ jobs:
       - name: Verify generated Space measurements are current
         run: python scripts/build_space_measurements.py --check
 
+      - name: Verify Obstruction and Tower Space data is current
+        run: python scripts/build_obstruction_tower_space.py --check
+
       - name: Verify the infographic matches the saved run
         run: python scripts/make_infographic.py --check
 
@@ -127,10 +130,20 @@ jobs:
           assert payload['predicted_bit'] in (0, 1);
           arc, ribbon, report = app.simulate(5000, 24);
           assert arc.startswith('<svg') and ribbon.startswith('<svg') and report;
-          assert app.simulate_bits(64)['steps'] == 64"
+          assert app.simulate_bits(64)['steps'] == 64;
+          arena_svg, arena_report, arena = app.inspect_model_arena(20000, 3, 210);
+          assert arena_svg.startswith('<svg') and arena_report and arena['test_steps'] > 0;
+          tower_svg, tower_report, tower = app.inspect_signed_tower(2000);
+          assert tower_svg.startswith('<svg') and tower['identity_verified'] and tower_report;
+          power_svg, power_report, power = app.inspect_power_probe(3, 210, 64);
+          assert power_svg.startswith('<svg') and power_report and power['layers'] == 64;
+          evolution_svg, evolution_report, evolution = app.inspect_evolution(2000, 64, 3, 210);
+          assert evolution_svg.startswith('<svg') and evolution_report and evolution['end_step'] == 2064;
+          rank_svg, rank_report, rank = app.inspect_rank_tower(7);
+          assert rank_svg.startswith('<svg') and rank['real_rank'] == 221 and rank_report"
 
   claude-ai-holes-smoke:
-    name: Claude.ai holes Space smoke test
+    name: Obstruction Compression Space smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -166,6 +179,9 @@ jobs:
           assert app.CATALOGUE.event_count == 3102;
           strip, report = app.explore('full span', 0);
           assert strip.startswith('<svg') and '1,277,399' in report;
+          catalogue_svg, process_svg, compression_report, compression = app.compression_experiment(20000);
+          assert catalogue_svg.startswith('<svg') and process_svg.startswith('<svg');
+          assert compression['catalogue']['event_round_trip'] and compression_report;
           assert '1,277,399' in app.overview()"
 
   deploy-space:
@@ -194,7 +210,7 @@ jobs:
           subdirectory: apps/space
 
   deploy-claude-ai-holes:
-    name: Deploy Claude.ai holes Space
+    name: Deploy Obstruction Compression Space
     needs: [python-ci, claude-ai-holes-smoke]
     if: >-
       github.event_name == 'push' &&

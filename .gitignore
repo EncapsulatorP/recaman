@@ -1,5 +1,6 @@
 __pycache__/
 *.py[cod]
+.venv/
 
 /supporting_docs/recaman_final_math.docx
 /supporting_docs/recaman_final_math.pdf

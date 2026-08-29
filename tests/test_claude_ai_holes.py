@@ -13,7 +13,17 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
-
+from compression_figures import compression_bars
+from compression_lab import (
+    catalogue_benchmark,
+    decode_events,
+    decode_phase_slips,
+    encode_events,
+    encode_phase_slips,
+    pack_bits,
+    process_benchmark,
+    unpack_bits,
+)
 from hole_figures import (
     POSTER_HEIGHT,
     POSTER_WIDTH,
@@ -28,7 +38,6 @@ from hole_figures import (
 )
 from holes import HoleEvent, load_catalogue, parse
 from sequence import walk
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SPACE_DIR = REPO_ROOT / "apps" / "claude_ai_holes"
@@ -163,6 +172,39 @@ def test_walk_stays_below_the_smallest_catalogued_hole(catalogue) -> None:
 def test_walk_rejects_empty_runs() -> None:
     with pytest.raises(ValueError):
         walk(0)
+
+
+# --- compression experiment ----------------------------------------------
+
+
+def test_catalogue_event_codec_round_trips_and_compresses(catalogue) -> None:
+    encoded = encode_events(catalogue.events)
+    assert decode_events(encoded) == catalogue.events
+    benchmark = catalogue_benchmark(catalogue, (SPACE_DIR / "holes.txt").read_bytes())
+    assert benchmark["event_round_trip"] is True
+    assert benchmark["integer_count"] == 1_277_399
+    assert benchmark["best"]["bytes"] < benchmark["event_codec_bytes"]
+    assert benchmark["best"]["ratio"] > 100
+
+
+def test_process_codecs_round_trip_and_reconstruct_the_trajectory() -> None:
+    terms, bits = walk(20_000)
+    packed = pack_bits(bits)
+    slips = encode_phase_slips(bits)
+    assert unpack_bits(packed, len(bits)) == bits
+    assert decode_phase_slips(slips) == bits
+
+    benchmark = process_benchmark(20_000)
+    assert benchmark["final_term"] == terms[-1]
+    assert all(benchmark["round_trips"].values())
+    assert benchmark["best"]["bytes"] < len(bits) // 8
+    assert benchmark["held_out_model"]["bits_per_step"] < 0.2
+
+
+def test_compression_figure_is_well_formed(catalogue) -> None:
+    payload = catalogue_benchmark(catalogue, (SPACE_DIR / "holes.txt").read_bytes())
+    root = _parse(compression_bars(payload, "Compression test"))
+    assert root.get("role") == "img"
 
 
 # --- figures ---------------------------------------------------------------

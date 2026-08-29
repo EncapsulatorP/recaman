@@ -1,101 +1,123 @@
 ---
-title: Recaman Next-Move Predictor
-emoji: 🔁
-colorFrom: blue
-colorTo: yellow
+title: Recamán Next-Move Model Lab
+emoji: 🧠
+colorFrom: purple
+colorTo: cyan
 sdk: gradio
 sdk_version: 5.50.0
 python_version: "3.11"
 app_file: app.py
 license: mit
 pinned: false
-short_description: One-step obstruction-bit baseline for the Recaman sequence
+short_description: Forward-held-out inferred agents for Recamán's next blocked/free move
 tags:
   - mathematics
   - number-theory
   - recaman
   - oeis-a005132
-  - time-series
+  - dynamical-systems
   - reproducible-research
 ---
 
-# Recamán Next-Move Predictor
+# Recamán Next-Move Model Lab
 
-The Recamán sequence starts at `a(0) = 0` and, at every step `n`, first tries
-the backward move `a(n-1) - n`. It takes that move when the result is positive
-and unvisited; otherwise it is **obstructed** and moves forward to
-`a(n-1) + n`. The **obstruction bit** records which of the two happened:
+This is the rigorous sibling of the compression-focused obstruction Space. Its
+target is the process-side obstruction bit: whether Recamán's attempted backward
+move is free or blocked.
 
-| bit | meaning |
-| --- | --- |
-| `b(n) = 0` | the backward move was free — DOWN / FREE |
-| `b(n) = 1` | the backward move was blocked — UP / BLOCKED |
+- **Agent Arena** — inferred models fit the first 80% of a prefix and are scored
+  only on its untouched final 20%;
+- **model evolution** — AUC, calibration, accuracy and predictive code length
+  decide which agent earns influence;
+- **signed tower** — the exact identity
+  `aₙ = Σᵢ≤ₙ i(2bᵢ−1) = Tₙ − 2ΣDₙ`;
+- **tower shadows** — saved null-controlled power-of-two rank and
+  Grassmannian measurements;
+- **power experiment** — an interactive sign-flipping modular power iterator
+  displayed against a fixed-sign control and the real obstruction bits.
+- **evolution race** — deterministic visited-set evolution against autonomous
+  alternation and modular-power rollouts that consume their own predictions.
 
-## What this Space does
+## What you can do
 
-**Predict** — given the previous obstruction bit, it returns the next one with
-the conditional probability measured over a saved 10,000,000-step run.
+### Fit, freeze and score inferred agents
 
-**Explore the real sequence** — it generates the sequence live in your browser
-session and recomputes the same statistics on your own prefix, so you can watch
-the phase-slip rate fall as the horizon grows.
+Historical, arithmetic, phase-slip, modulo and tower agents compete against a
+prevalence-only Skeptic. A train-weighted ensemble is frozen before the future
+block is revealed. Models are ranked primarily by held-out bits per step: a
+feature that cannot compress future outcomes does not earn influence.
 
-**Method and limits** — the definitions, the measured numbers, and an explicit
-statement of what the result does not claim.
+The exact visited-set collision rule is displayed only as an oracle ceiling and
+is never allowed into the inferred ensemble. The value-side gap model remains a
+first-class registry entry, but its AUC is not blended with the different
+next-bit target.
 
-## What it does not claim
+### Race deterministic and model evolution
 
-* **It is not a proof.** Every number is an empirical measurement at a stated
-  horizon. The same-bit slip rate fell from 2.37% at N = 10⁴ to 0.108% at
-  N = 10⁷ and is still falling, so no limiting value is asserted.
-* **It does not locate the slips.** Predicting *where* the rare defects occur is
-  the open part of the problem.
-* **It says nothing about permanently missing integers.** That is a separate,
-  value-side question in the research repository.
+Choose a shared exact checkpoint and let three paths advance independently:
+the deterministic Recamán recurrence, the previous-sign alternation baseline,
+and the sign-flipping modular-power shadow. The Space reports the first wrong
+sign, bit agreement, final path error, and model moves forbidden by their own
+visited histories.
 
-## API
+The final value in Chaffin's hole catalogue is shown as a value-side frontier,
+not misrepresented as a resumable Recamán state. Exact continuation from his
+computation beyond 10^612 terms would require the full visited-range checkpoint.
 
-Both endpoints are callable with `gradio_client`:
+### Inspect the exact ±n tower
 
-```python
-from gradio_client import Client
+Choose any step up to 200,000 and inspect the layers that reconstruct the
+sequence value:
 
-client = Client("<owner>/<space-name>")
-
-client.predict(previous_move="DOWN / FREE  (b = 0)", api_name="/predict_next_obstruction")
-client.predict(steps=64, api_name="/simulate_obstruction_bits")
+```text
+a(n) = T(n) - 2 * sum(down-step indices)
 ```
 
-`predict_next_obstruction` returns the predicted move together with its
-confidence, the slip probability and the horizon the numbers were measured at.
-`simulate_obstruction_bits` returns the terms, the obstruction bits and the slip
-positions for a prefix of up to 5,000 steps.
+The visual sign ribbon shows `−n` for free backward moves, `+n` for blocked
+moves, and highlights same-sign phase slips.
 
-## Provenance
+### Test a sign-flipping power idea
 
-Every displayed number is read from `measurements.json`, which
-`scripts/build_space_measurements.py` derives from
-`outputs/recaman_wheel_results.json` in the research repository. Nothing in this
-Space is a hand-typed constant, and the figures are generated from the same
-data at request time rather than shipped as images.
+The modular probe uses a bounded recurrence:
 
-Source, methods and the full result set:
-<https://github.com/kugguk2022/recaman_obstructions>
+```text
+r[h+1] = ((-1)^h * base)^(r[h] + 1) mod modulus
+```
 
-## Files
+Its binary shadow is compared with both the real Recamán obstruction bits and
+a fixed-positive-base control. Interactive parameter choice is multiple
+testing, so the displayed agreement is hypothesis generation—not a fitted
+result.
 
-| file | role |
-| --- | --- |
-| `app.py` | Gradio interface and API endpoints |
-| `predictor.py` | the one-step predictor, loaded from `measurements.json` |
-| `recaman.py` | sequence and obstruction-bit generation |
-| `figures.py` | SVG figures, theme-aware, no plotting dependency |
-| `measurements.json` | generated measurements from the 10⁷-step run |
+### Audit the inference boundary
 
-## License
+The Space displays the repository's saved measurements under different
+information budgets:
+
+- arithmetic-only process features: AUC 0.6791;
+- leakage-reduced value-side gap dynamics: AUC 0.7586;
+- arithmetic plus the previous sign: AUC 0.9907, dominated by alternation;
+- full visited-set collision oracle: AUC 1.0.
+
+## API endpoints
+
+- `/model_arena`
+- `/evolution_race`
+- `/signed_tower_snapshot`
+- `/sign_flipping_power_probe`
+- `/power_of_two_rank`
+- `/predict_next_obstruction`
+- `/simulate_obstruction_bits`
+
+## Provenance and limits
+
+The compact `tower_measurements.json` bundle is generated from saved outputs in
+the [research repository](https://github.com/EncapsulatorP/recaman), while
+`holes.txt` is synchronized from its root `obstructions.txt`.
+
+Every tab labels whether it is showing an exact identity, a catalogue fact, a
+saved empirical measurement, or an exploratory probe.
+
+External provenance: [Benjamin Chaffin's Recamán computation](https://benchaffin.com/recaman/recaman.html).
 
 Released under the MIT License.
-
-<img src="https://raw.githubusercontent.com/kugguk2022/Zyntalic_idiom/main/assets/online-presence.svg" alt="Online presence" width="180">
-
-<sub>The "online presence" mark is kugguk project artwork and does not modify or restrict the MIT License.</sub>
