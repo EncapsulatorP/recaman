@@ -7,6 +7,7 @@ sdk: gradio
 sdk_version: 5.50.0
 python_version: "3.11"
 app_file: app.py
+license: mit
 pinned: false
 short_description: One-step obstruction-bit baseline for the Recaman sequence
 tags:
@@ -90,3 +91,11 @@ Source, methods and the full result set:
 | `recaman.py` | sequence and obstruction-bit generation |
 | `figures.py` | SVG figures, theme-aware, no plotting dependency |
 | `measurements.json` | generated measurements from the 10⁷-step run |
+
+## License
+
+Released under the MIT License.
+
+<img src="https://raw.githubusercontent.com/kugguk2022/Zyntalic_idiom/main/assets/online-presence.svg" alt="Online presence" width="180">
+
+<sub>The "online presence" mark is kugguk project artwork and does not modify or restrict the MIT License.</sub>

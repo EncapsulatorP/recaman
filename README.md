@@ -15,6 +15,7 @@ The strongest current process-side conclusion is simple:
 - the observed stream is best described as near-perfect alternation plus rare phase-slip defects.
 
 That is a stronger empirical statement than the geometric story at the moment. The geometric / phase-slip framing remains useful as an exploratory language for where the rare defects occur, but the local closure problem for those defect locations is still open.
+
 ## Snapshot
 
 ![Predicting Recaman's next move: the rule, the measured transition, a real phase slip, and the slip rate falling with the horizon](outputs/recaman_next_move_infographic.svg)
@@ -236,4 +237,11 @@ python .\scripts\recaman_phase_space_3d.py --steps 2800 --mode arc-lift --twist 
 5. Test whether the moderate `0.66` random-matrix signal survives under stronger locality constraints and alternative control matching.
 6. Add a single experiment index file so each saved JSON can be traced to the exact command and code version that produced it.
 
+## License
+
+Released under the [MIT License](LICENSE).
+
+<img src="https://raw.githubusercontent.com/kugguk2022/Zyntalic_idiom/main/assets/online-presence.svg" alt="Online presence" width="180">
+
+<sub>The "online presence" mark is kugguk project artwork and does not modify or restrict the MIT License.</sub>
 

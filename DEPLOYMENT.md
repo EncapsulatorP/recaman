@@ -47,12 +47,11 @@ Change both together, then run the Space job locally if you can. Moving across
 a major version (5 → 6) is a breaking change for the SDK and should be its own
 commit.
 
-### Still to do before the Space card is complete
+### Licensing
 
-The repository has no `LICENSE` file, so the Space card omits the `license:`
-field and Hugging Face will show the Space as unlicensed. Add a `LICENSE` at the
-repository root and the matching `license:` key to `apps/space/README.md` when
-you have decided on terms.
+The repository is MIT-licensed ([`LICENSE`](LICENSE)), and the Space card
+declares `license: mit` to match. If the root licence ever changes, change the
+card's `license:` key in the same commit.
 
 ## Enable Hugging Face deployment
 
