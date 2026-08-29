@@ -38,8 +38,8 @@ which values are permanently absent.
 
 ## Live experiments
 
-- [Recamán Obstruction Compression Lab](https://huggingface.co/spaces/kugguk/recaman-obstruction-lab) — lossless range/delta codecs, phase-slip encoding and exact round-trip checks.
-- [Recamán Next-Move Model Lab](https://huggingface.co/spaces/kugguk/recaman-next-move) — inferred agents, chronological holdouts, tower/modular ablations and predictive code length.
+- **Flagship:** [Recamán Next-Move Arena](https://huggingface.co/spaces/kugguk/recaman-next-move) — blind step-by-step inference, a weekly Champion–Challenger league, tower/modular ablations and predictive code length.
+- **Experimental feeder:** [Recamán Obstruction Compression Lab](https://huggingface.co/spaces/kugguk/recaman-obstruction-lab) — hoverable lossless-codec races, a 3,102-event obstruction map, phase-slip scope and exact round-trip checks.
 
 ## Current picture
 

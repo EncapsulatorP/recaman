@@ -1,0 +1,109 @@
+{
+  "evaluation": {
+    "challenger": {
+      "accuracy": 0.996025,
+      "auc": 0.9982693562456734,
+      "base": 2,
+      "bits_per_step": 0.027817705132351347,
+      "brier": 0.00337312578909529,
+      "log_loss": 0.019281763882137256,
+      "modulus": 97,
+      "name": "Tower-augmented challenger",
+      "phase_slip_ap": 0.3338651096659839,
+      "phase_slip_rate": 0.0042,
+      "precision": 0.9939255128460466,
+      "recall": 0.9981499074953748
+    },
+    "champion": {
+      "accuracy": 0.996025,
+      "auc": 0.9984500262461251,
+      "bits_per_step": 0.027176770784215355,
+      "brier": 0.003358503107486999,
+      "log_loss": 0.018837502045802767,
+      "name": "Phase-slip hunter",
+      "phase_slip_ap": 0.41744460133727024,
+      "phase_slip_rate": 0.0042,
+      "precision": 0.9939255128460466,
+      "recall": 0.9981499074953748
+    },
+    "decision": "KEEP CHAMPION",
+    "margin_bits_per_step": -0.0006409343481359915,
+    "primary_metric": "bits per step on sealed final block",
+    "promoted": false,
+    "promotion_margin_required": 0.0005,
+    "protocol": "60% fit / 20% challenger selection / 20% sealed promotion test",
+    "selection_warning": "Tower base/modulus are selected only on the middle validation block; the final promotion block stays sealed until one configuration is chosen.",
+    "steps": 200000,
+    "test_steps": 40000,
+    "train_steps": 119999,
+    "validation_search": [
+      {
+        "accuracy": 0.966175,
+        "auc": 0.9961135412402838,
+        "base": 2,
+        "bits_per_step": 0.0912931915472968,
+        "brier": 0.018752243986626435,
+        "log_loss": 0.0632796183253278,
+        "modulus": 97,
+        "phase_slip_ap": 0.21159996818593646,
+        "phase_slip_rate": 0.005625,
+        "precision": 0.9387351778656127,
+        "recall": 0.9974501274936253
+      },
+      {
+        "accuracy": 0.966175,
+        "auc": 0.9961135412402838,
+        "base": 3,
+        "bits_per_step": 0.09130590663854186,
+        "brier": 0.01875527942468306,
+        "log_loss": 0.06328843175497488,
+        "modulus": 210,
+        "phase_slip_ap": 0.21159996818593646,
+        "phase_slip_rate": 0.005625,
+        "precision": 0.9387351778656127,
+        "recall": 0.9974501274936253
+      },
+      {
+        "accuracy": 0.966175,
+        "auc": 0.9961135412402838,
+        "base": 5,
+        "bits_per_step": 0.09130858951981134,
+        "brier": 0.018756208863705503,
+        "log_loss": 0.0632902913865626,
+        "modulus": 256,
+        "phase_slip_ap": 0.21159996818593646,
+        "phase_slip_rate": 0.005625,
+        "precision": 0.9387351778656127,
+        "recall": 0.9974501274936253
+      },
+      {
+        "accuracy": 0.966175,
+        "auc": 0.9961135412402838,
+        "base": 7,
+        "bits_per_step": 0.09130590663854186,
+        "brier": 0.01875527942468306,
+        "log_loss": 0.06328843175497488,
+        "modulus": 420,
+        "phase_slip_ap": 0.21159996818593646,
+        "phase_slip_rate": 0.005625,
+        "precision": 0.9387351778656127,
+        "recall": 0.9974501274936253
+      },
+      {
+        "accuracy": 0.966175,
+        "auc": 0.9959790437399476,
+        "base": 11,
+        "bits_per_step": 0.09177779687250973,
+        "brier": 0.01876177962865462,
+        "log_loss": 0.06361552114018348,
+        "modulus": 997,
+        "phase_slip_ap": 0.14319376146377694,
+        "phase_slip_rate": 0.005625,
+        "precision": 0.9387351778656127,
+        "recall": 0.9974501274936253
+      }
+    ],
+    "validation_steps": 39999
+  },
+  "season": 1
+}

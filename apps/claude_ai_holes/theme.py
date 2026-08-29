@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import gradio as gr
 
-
 # Brand anchors, straight from the Repo Galaxy artwork.
 SPACE = "#07101a"
 SPACE_CARD = "#10263d"
@@ -145,4 +144,63 @@ CSS = f"""
 
 #kg-mark svg {{ display: block; width: 180px; height: auto; }}
 #kg-footer {{ opacity: 0.75; font-size: 0.85rem; }}
+
+/* Flagship-quality experiment shell. */
+#kg-hero {{ padding: 0; margin-bottom: 18px; }}
+.kg-hero {{
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr);
+  gap: 34px;
+  align-items: center;
+  padding: 38px;
+  border-radius: 26px;
+  overflow: hidden;
+  color: #e8f6ff;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255,61,240,.20), transparent 34%),
+    linear-gradient(132deg, #07101a 0%, #10263d 57%, #064f5a 100%);
+  box-shadow: 0 22px 64px rgba(5, 12, 22, .24);
+}}
+.kg-kicker {{ color: var(--kg-cyan); font-size: .76rem; font-weight: 800; letter-spacing: .15em; }}
+.kg-hero h1 {{ margin: .45rem 0 1rem; font-size: clamp(2.35rem, 5vw, 4.8rem); line-height: .96; }}
+.kg-hero p {{ color: #c9d9e6; max-width: 710px; font-size: 1.04rem; line-height: 1.6; }}
+.kg-hero-actions {{ display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 20px; }}
+.kg-hero-actions a {{ background: var(--kg-cyan); color: #04121c; font-weight: 800; padding: 10px 14px; border-radius: 12px; text-decoration: none; }}
+.kg-hero-actions span {{ color: #9db3c8; font-size: .83rem; }}
+.kg-hero-meter {{ padding: 22px; border-radius: 20px; background: rgba(255,255,255,.065); border: 1px solid rgba(255,255,255,.1); }}
+.kg-meter-label {{ display: flex; justify-content: space-between; gap: 12px; color: #9db3c8; font-size: .78rem; }}
+.kg-meter-label strong {{ color: #e8f6ff; }}
+.kg-meter-winner {{ margin-top: 18px; color: var(--kg-amber); }}
+.kg-meter-track {{ height: 12px; margin-top: 8px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; }}
+.kg-meter-track i {{ display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,var(--kg-cyan),var(--kg-magenta)); }}
+.kg-meter-small i {{ background: var(--kg-amber); min-width: 8px; }}
+.kg-meter-verdict {{ display: flex; align-items: baseline; gap: 9px; margin-top: 22px; }}
+.kg-meter-verdict strong {{ font-size: 2.6rem; color: var(--kg-amber); }}
+.kg-meter-verdict span {{ color: #9db3c8; font-size: .82rem; }}
+.kg-statline {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: -34px 24px 24px; position: relative; z-index: 2; }}
+.kg-statline div {{ padding: 15px 18px; border-radius: 16px; background: #10263d; color: #e8f6ff; box-shadow: 0 10px 26px rgba(5,12,22,.17); }}
+.kg-statline strong,.kg-statline span {{ display: block; }}
+.kg-statline strong {{ font-size: 1.35rem; }} .kg-statline span {{ color: #9db3c8; font-size: .76rem; }}
+.kg-section-head {{ margin: 18px 0 14px; }}
+.kg-section-head>span {{ color: #0d8795; font-size: .75rem; font-weight: 800; letter-spacing: .14em; }}
+.kg-section-head h2 {{ margin: .2rem 0; font-size: clamp(1.65rem, 3vw, 2.5rem); }}
+.kg-section-head p {{ max-width: 820px; opacity: .76; }}
+.kg-control-row {{ align-items: end; }}
+.kg-result-grid {{ display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin: 10px 0 14px; }}
+.kg-result {{ padding: 16px; border-radius: 16px; background: #10263d; color: #e8f6ff; border-top: 2px solid #29435a; }}
+.kg-result-accent {{ border-top-color: var(--kg-cyan); }}
+.kg-result span,.kg-result small {{ display:block; color:#9db3c8; font-size:.75rem; }}
+.kg-result strong {{ display:block; font-size:1.55rem; margin:4px 0; }}
+.kg-verification {{ display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; padding:11px 14px; margin-bottom:18px; border-radius:14px; background:rgba(67,255,158,.08); color:#285f47; font-size:.8rem; }}
+@media (prefers-color-scheme: dark) {{ .kg-verification {{ color:#9ce9c2; }} }}
+.kg-subhead {{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin:18px 0 8px; }}
+.kg-subhead span {{ opacity:.68; font-size:.82rem; }}
+.kg-empty {{ padding:18px; border-radius:16px; background:rgba(141,166,191,.1); }}
+#kg-footer {{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:28px 0 8px; padding-top:16px; border-top:1px solid var(--kg-edge); }}
+#kg-footer a {{ color:var(--kg-cyan); }}
+@media (max-width: 860px) {{
+  .kg-hero {{ grid-template-columns: 1fr; padding: 26px 22px; }}
+  .kg-statline {{ margin: -18px 10px 18px; grid-template-columns: 1fr; }}
+  .kg-result-grid {{ grid-template-columns: 1fr; }}
+}}
 """

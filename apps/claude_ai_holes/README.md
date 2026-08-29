@@ -69,11 +69,10 @@ everything. An integer the sequence misses **at every step, forever** is an
 
 | 🎨 Tab | What it shows |
 | --- | --- |
-| **The hole set** | counts, run-length structure, gap percentiles, missing integers per power of ten |
-| **Compression engine** | expanded values versus range/delta/general codecs, all with exact round-trip checks |
-| **Explore the span** | a density strip you slide across the range, recomputed live for any window |
-| **What is predictable** | every measured AUC on one axis, anchored at chance |
-| **Method and sources** | the rule, the provenance, the completeness claim, and the boundary with `b(n)` |
+| **Codec race** | hoverable log-scale byte races with exact round-trip checks and live prefix control |
+| **Obstruction map** | all 3,102 events as a hoverable log/log map plus a scrub-able exact density window |
+| **Phase-slip scope** | a live blocked/free signal scope with rare same-sign slips highlighted |
+| **Evidence** | structural totals, measured AUCs, provenance and the boundary with `b(n)` |
 
 ---
 

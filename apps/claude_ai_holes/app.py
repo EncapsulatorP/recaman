@@ -19,7 +19,6 @@ import json
 from pathlib import Path
 
 import gradio as gr
-from compression_figures import compression_bars
 from compression_lab import catalogue_benchmark, process_benchmark
 from hole_figures import (
     VARIANT,
@@ -27,21 +26,25 @@ from hole_figures import (
     auc_chart,
     auc_rows,
     decade_chart,
-    poster,
     span_strip,
     svg_document,
 )
 from holes import load_catalogue
+from interactive_figures import (
+    CODEC_COLOURS,
+    EVENT_COLOURS,
+    benchmark_frame,
+    catalogue_map_frame,
+    phase_scope,
+)
 from sequence import walk
 from theme import CSS, brand_theme
 
 HERE = Path(__file__).resolve().parent
 RESULTS = json.loads((HERE / "results.json").read_text(encoding="utf-8"))
-MARK = (HERE / "assets" / "online-presence.svg").read_text(encoding="utf-8")
 CATALOGUE = load_catalogue()
 CATALOGUE_COMPRESSION = catalogue_benchmark(CATALOGUE, (HERE / "holes.txt").read_bytes())
 REPO_URL = "https://github.com/EncapsulatorP/recaman"
-PROFILE_URL = "https://github.com/kugguk2022"
 
 WINDOW_WIDTHS = {
     "full span": None,
@@ -53,7 +56,7 @@ WINDOW_WIDTHS = {
 }
 
 # Built once at import: the catalogue never changes at run time.
-POSTER_SVG = poster(CATALOGUE, RESULTS, walk(24))
+CATALOGUE_MAP = catalogue_map_frame(CATALOGUE)
 DECADE_SVG = svg_document(
     decade_chart(CATALOGUE.decade_profile(), 900, 300), 900, 300,
     "Missing integers per power-of-ten band",
@@ -73,6 +76,33 @@ def _percentiles(values: list[int]) -> dict[str, int]:
     def at(fraction: float) -> int:
         return ordered[min(int(fraction * len(ordered)), len(ordered) - 1)]
     return {"min": ordered[0], "p25": at(0.25), "median": at(0.5), "p75": at(0.75), "max": ordered[-1]}
+
+
+def hero() -> str:
+    """A compact control-room opening using only measured values."""
+    best = CATALOGUE_COMPRESSION["best"]
+    baseline = CATALOGUE_COMPRESSION["baseline_bytes"]
+    return f'''<section class="kg-hero">
+  <div class="kg-hero-copy">
+    <div class="kg-kicker">LOSSLESS · REPRODUCIBLE · INTERACTIVE</div>
+    <h1>Recamán Obstruction<br/>Compression Lab</h1>
+    <p>Can structural regularity turn a 1.27-million-value obstruction catalogue
+    into a tiny exact code—and can the same idea predict the next move?</p>
+    <div class="kg-hero-actions"><a href="#compression-lab">Run the codec race ↓</a><span>Every winner must decode exactly.</span></div>
+  </div>
+  <div class="kg-hero-meter" aria-label="Catalogue compression summary">
+    <div class="kg-meter-label"><span>expanded uint32</span><strong>{baseline / 1_000_000:.2f} MB</strong></div>
+    <div class="kg-meter-track"><i style="width:100%"></i></div>
+    <div class="kg-meter-label kg-meter-winner"><span>{best['name']}</span><strong>{best['bytes'] / 1_000:.2f} KB</strong></div>
+    <div class="kg-meter-track kg-meter-small"><i style="width:{max(1.2, 100 / best['ratio']):.2f}%"></i></div>
+    <div class="kg-meter-verdict"><strong>{best['ratio']:.0f}×</strong><span>smaller, byte-for-byte reversible</span></div>
+  </div>
+</section>
+<div class="kg-statline">
+  <div><strong>{CATALOGUE.integer_count:,}</strong><span>missing integers</span></div>
+  <div><strong>{CATALOGUE.event_count:,}</strong><span>range events</span></div>
+  <div><strong>{CATALOGUE_COMPRESSION['event_codec_bytes']:,} B</strong><span>auditable event code</span></div>
+</div>'''
 
 
 def overview() -> str:
@@ -133,70 +163,35 @@ def explore(window_label: str, position: float) -> tuple[str, str]:
 
     if summary["events"] == 0:
         report = (
-            f"No catalogued holes between **{low:,}** and **{high:,}**. "
-            "Every integer in this window is reached by the sequence."
+            f'<div class="kg-empty">No catalogued holes between <b>{low:,}</b> and '
+            f'<b>{high:,}</b>. Every integer in this window is reached.</div>'
         )
     else:
         # Tiny shares round away to 0.0000%, so density is reported as "1 in N".
         rarity = round(1 / summary["coverage"]) if summary["coverage"] else 0
-        report = (
-            f"| window | integers | hole events | missing | density | longest run |\n"
-            f"| --- | ---: | ---: | ---: | ---: | ---: |\n"
-            f"| {low:,} – {high:,} | {summary['width']:,} | {summary['events']:,} "
-            f"| {summary['missing']:,} | 1 in {rarity:,} "
-            f"| {summary['longest_run']:,} |\n\n"
-            f"The catalogue as a whole misses 1 integer in "
-            f"{round(1 / CATALOGUE.coverage):,}, so this window is "
-            f"**{summary['coverage'] / CATALOGUE.coverage:.2f}×** as dense."
-        )
+        relative = summary["coverage"] / CATALOGUE.coverage
+        report = f'''<div class="kg-result-grid" aria-live="polite">
+<div class="kg-result"><span>events in view</span><strong>{summary['events']:,}</strong><small>{summary['missing']:,} missing integers</small></div>
+<div class="kg-result"><span>local rarity</span><strong>1 in {rarity:,}</strong><small>{relative:.2f}× catalogue density</small></div>
+<div class="kg-result"><span>longest run</span><strong>{summary['longest_run']:,}</strong><small>consecutive missing values</small></div>
+</div>'''
     return strip, report
 
 
-def compression_experiment(steps: int) -> tuple[str, str, str, dict]:
+def compression_experiment(steps: int) -> tuple[object, object, str, dict]:
     """Run both exact compression scoreboards and expose their audit payload."""
     process = process_benchmark(steps)
-    catalogue_figure = compression_bars(
-        CATALOGUE_COMPRESSION,
-        "Chaffin hole catalogue: expanded values vs range-aware codecs",
-    )
-    process_figure = compression_bars(
-        process,
-        f"Obstruction-bit stream through n = {process['steps']:,}",
-    )
+    catalogue_figure = benchmark_frame(CATALOGUE_COMPRESSION)
+    process_figure = benchmark_frame(process)
     catalogue_best = CATALOGUE_COMPRESSION["best"]
     process_best = process["best"]
     model = process["held_out_model"]
-    report = f"""
-## Compression is the experiment
-
-The hole set contains **{CATALOGUE_COMPRESSION['integer_count']:,} integers**, but only
-**{CATALOGUE_COMPRESSION['event_count']:,} consecutive-range events**. The best tested
-lossless representation stores the same set in **{catalogue_best['bytes']:,} bytes**:
-**{catalogue_best['ratio']:.1f}× smaller** than an expanded uint32 list. Its decoder
-reconstructs every event exactly.
-
-For the live process prefix, the obstruction stream has **{process['phase_slips']:,}
-phase slips** in {process['steps']:,} steps. The best serialized codec here is
-**{process_best['name']}** at **{process_best['bytes']:,} bytes**, or
-**{process_best['ratio']:.1f}× smaller** than storing one byte per bit. Decoding the
-sign stream reconstructs the exact final term **a({process['steps']:,}) =
-{process['final_term']:,}**.
-
-### Predictive compression, scored out of sample
-
-The near-alternation probability is estimated on the first
-{model['train_steps']:,} steps and frozen before encoding the final
-{model['test_steps']:,}. Its ideal arithmetic-code bound is
-**{model['bits_per_step']:.4f} bits/step**, versus **1.0000** for an uninformed binary
-code—a theoretical saving of **{model['theoretical_saving']:.2%}**.
-
-That is the clean connection to the model arena: a model earns influence only when it
-shortens held-out data. A tower feature that looks dramatic but cannot save bits loses
-to the Skeptic.
-
-> General-purpose codec sizes are actual serialized bytes. The model code length is an
-> information-theoretic arithmetic-coding bound and is labelled separately.
-"""
+    report = f'''<div class="kg-result-grid" aria-live="polite">
+<div class="kg-result kg-result-accent"><span>catalogue winner</span><strong>{catalogue_best['ratio']:.1f}×</strong><small>{catalogue_best['name']} · {catalogue_best['bytes']:,} bytes</small></div>
+<div class="kg-result"><span>process winner</span><strong>{process_best['ratio']:.1f}×</strong><small>{process_best['name']} · {process_best['bytes']:,} bytes</small></div>
+<div class="kg-result"><span>held-out prediction</span><strong>{model['bits_per_step']:.4f}</strong><small>bits/step · {model['theoretical_saving']:.2%} below the 1-bit baseline</small></div>
+</div>
+<div class="kg-verification"><b>✓ Exact round trips</b><span>events</span><span>packed bits</span><span>phase slips</span><span>trajectory a({process['steps']:,}) = {process['final_term']:,}</span></div>'''
     payload = {
         "catalogue": CATALOGUE_COMPRESSION,
         "process": process,
@@ -281,32 +276,66 @@ with gr.Blocks(
     css=CSS,
     analytics_enabled=False,
 ) as demo:
-    gr.HTML(POSTER_SVG, elem_id="kg-poster")
+    gr.HTML(hero(), elem_id="kg-hero")
 
     with gr.Tabs(selected="compression"):
-        with gr.Tab("The hole set"):
-            gr.Markdown(overview())
-            gr.Markdown("#### Missing integers per power-of-ten band")
-            gr.HTML(DECADE_SVG)
-
-        with gr.Tab("Compression engine", id="compression"):
-            gr.Markdown(
-                "Treat every claimed pattern as a coding proposal. Range structure compresses "
-                "the hole catalogue; phase-slip structure compresses the process stream; held-out "
-                "code length decides whether an inferred model discovered anything reusable."
+        with gr.Tab("Codec race", id="compression"):
+            gr.HTML(
+                '<div class="kg-section-head" id="compression-lab"><span>01 / CODEC RACE</span>'
+                '<h2>Make structure pay rent.</h2><p>Hover every bar. Change the exact prefix. '
+                'The byte count—not visual drama—chooses the winner.</p></div>'
             )
-            compression_steps = gr.Slider(
-                minimum=1_000,
-                maximum=200_000,
-                value=100_000,
-                step=1_000,
-                label="Exact Recamán prefix to encode",
-            )
-            compression_button = gr.Button("Run lossless compression race", variant="primary")
-            catalogue_compression_view = gr.HTML()
-            process_compression_view = gr.HTML()
-            compression_report = gr.Markdown()
-            compression_payload = gr.JSON(label="Codec audit payload")
+            with gr.Row(elem_classes="kg-control-row"):
+                compression_steps = gr.Slider(
+                    minimum=1_000,
+                    maximum=200_000,
+                    value=100_000,
+                    step=1_000,
+                    label="Exact Recamán prefix",
+                    info="The final 20% is always held out before scoring.",
+                    scale=4,
+                )
+                compression_button = gr.Button(
+                    "Race codecs",
+                    variant="primary",
+                    scale=1,
+                )
+            compression_report = gr.HTML(elem_id="kg-live-results")
+            with gr.Row(equal_height=True):
+                catalogue_compression_view = gr.BarPlot(
+                    x="codec",
+                    y="log10(bytes)",
+                    color="family",
+                    color_map=CODEC_COLOURS,
+                    title="Catalogue — log₁₀ serialized bytes",
+                    x_title="codec",
+                    y_title="log₁₀(bytes)",
+                    tooltip="all",
+                    x_label_angle=-24,
+                    y_lim=[0, None],
+                    height=390,
+                    show_fullscreen_button=True,
+                    show_export_button=True,
+                    container=False,
+                )
+                process_compression_view = gr.BarPlot(
+                    x="codec",
+                    y="log10(bytes)",
+                    color="family",
+                    color_map=CODEC_COLOURS,
+                    title="Obstruction stream — log₁₀ serialized bytes",
+                    x_title="codec",
+                    y_title="log₁₀(bytes)",
+                    tooltip="all",
+                    x_label_angle=-24,
+                    y_lim=[0, None],
+                    height=390,
+                    show_fullscreen_button=True,
+                    show_export_button=True,
+                    container=False,
+                )
+            with gr.Accordion("Open exact audit payload", open=False):
+                compression_payload = gr.JSON(label="Every byte count and round-trip check")
             compression_button.click(
                 fn=compression_experiment,
                 inputs=compression_steps,
@@ -318,13 +347,40 @@ with gr.Blocks(
                 ],
                 api_name="compression_experiment",
             )
-
-        with gr.Tab("Explore the span"):
-            gr.Markdown(
-                "Pick a window and slide it across the covered span. Each column of "
-                "the strip is one slice of the window; its height is the share of that "
-                "slice the catalogue marks missing."
+            compression_steps.release(
+                fn=compression_experiment,
+                inputs=compression_steps,
+                outputs=[
+                    catalogue_compression_view,
+                    process_compression_view,
+                    compression_report,
+                    compression_payload,
+                ],
+                show_progress="minimal",
             )
+
+        with gr.Tab("Obstruction map"):
+            gr.HTML(
+                '<div class="kg-section-head"><span>02 / EVENT MAP</span>'
+                '<h2>All 3,102 events. No aggregation.</h2><p>Hover an event to inspect its '
+                'exact range. Long runs rise out of the singleton floor.</p></div>'
+            )
+            gr.ScatterPlot(
+                value=CATALOGUE_MAP,
+                x="log10(start)",
+                y="log10(run length)",
+                color="kind",
+                color_map=EVENT_COLOURS,
+                title="Absolute-hole events across the verified catalogue",
+                x_title="log₁₀(event start)",
+                y_title="log₁₀(run length)",
+                tooltip="all",
+                height=460,
+                show_fullscreen_button=True,
+                show_export_button=True,
+                container=False,
+            )
+            gr.HTML('<div class="kg-subhead"><b>Scrub the verified span</b><span>Move the viewport; density is recomputed exactly.</span></div>')
             with gr.Row():
                 window_label = gr.Dropdown(
                     choices=list(WINDOW_WIDTHS),
@@ -339,25 +395,71 @@ with gr.Blocks(
                     label="Position across the span (%)",
                 )
             strip_view = gr.HTML()
-            window_report = gr.Markdown()
+            window_report = gr.HTML()
 
             explore_inputs = [window_label, position]
             explore_outputs = [strip_view, window_report]
             window_label.change(fn=explore, inputs=explore_inputs, outputs=explore_outputs)
             position.release(fn=explore, inputs=explore_inputs, outputs=explore_outputs)
 
-        with gr.Tab("What is predictable"):
+        with gr.Tab("Phase-slip scope"):
+            gr.HTML(
+                '<div class="kg-section-head"><span>03 / SIGNAL SCOPE</span>'
+                '<h2>Scrub the process, catch the slips.</h2><p>The bit stream nearly '
+                'alternates. Amber needles mark the rare moments it refuses to flip.</p></div>'
+            )
+            with gr.Row(elem_classes="kg-control-row"):
+                phase_center = gr.Slider(
+                    minimum=128,
+                    maximum=200_000,
+                    value=50_000,
+                    step=128,
+                    label="Scope centre n",
+                    scale=4,
+                )
+                phase_width = gr.Radio(
+                    choices=[64, 128, 256],
+                    value=128,
+                    label="Window",
+                    scale=1,
+                )
+            phase_view = gr.HTML()
+            phase_report = gr.HTML()
+            phase_inputs = [phase_center, phase_width]
+            phase_outputs = [phase_view, phase_report]
+            phase_center.release(
+                fn=phase_scope,
+                inputs=phase_inputs,
+                outputs=phase_outputs,
+                show_progress="hidden",
+            )
+            phase_width.change(
+                fn=phase_scope,
+                inputs=phase_inputs,
+                outputs=phase_outputs,
+                show_progress="hidden",
+            )
+
+        with gr.Tab("Evidence"):
+            gr.HTML(
+                '<div class="kg-section-head"><span>04 / EVIDENCE</span>'
+                '<h2>Exact facts and measured claims stay separate.</h2></div>'
+            )
+            gr.Markdown(overview())
+            gr.HTML(DECADE_SVG)
             gr.Markdown(PREDICTABLE)
             gr.HTML(AUC_SVG)
-
-        with gr.Tab("Method and sources"):
-            gr.Markdown(METHOD)
+            with gr.Accordion("Method, provenance, and limitations", open=False):
+                gr.Markdown(METHOD)
             gr.HTML(ARC_SVG)
 
-    gr.Markdown(f"---\n\n**{VARIANT}** of the Recamán obstruction research.")
-    gr.HTML(f'<div style="max-width:180px">{MARK}</div>')
+    gr.HTML(
+        f'<footer id="kg-footer"><span><b>{VARIANT}</b> · Recamán obstruction research</span>'
+        f'<span><a href="{REPO_URL}">source and reproducibility ↗</a></span></footer>'
+    )
 
     demo.load(fn=explore, inputs=explore_inputs, outputs=explore_outputs)
+    demo.load(fn=phase_scope, inputs=phase_inputs, outputs=phase_outputs)
     demo.load(
         fn=compression_experiment,
         inputs=compression_steps,

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
 from functools import lru_cache
+from pathlib import Path
 
 import gradio as gr
 from arena_figures import arena_scoreboard
 from figures import arc_diagram, bit_ribbon, svg_document
-from model_arena import evaluate_arena, evidence_registry
+from model_arena import evaluate_arena, evaluate_replay, evidence_registry
 from predictor import (
     N_EMPIRICAL,
     PHASE_SLIP_RATE,
@@ -16,6 +18,14 @@ from predictor import (
     predict_next_obstruction,
 )
 from recaman import MAX_INTERACTIVE_STEPS, MOVE_CHOICES, generate
+from replay_figures import (
+    SERIES_COLOURS,
+    replay_current_html,
+    replay_probability_frame,
+    replay_scoreboard_frame,
+    weekly_league_html,
+    weekly_validation_frame,
+)
 from tower_figures import (
     auc_ladder_svg,
     evolution_race_svg,
@@ -37,6 +47,8 @@ from tower_lab import (
 )
 
 MEASUREMENTS = load_measurements()
+HERE = Path(__file__).resolve().parent
+WEEKLY_ARENA = json.loads((HERE / "weekly_arena.json").read_text(encoding="utf-8"))
 DEFAULT_CHOICE = next(iter(MOVE_CHOICES))
 REPO_URL = "https://github.com/EncapsulatorP/recaman"
 SPACE_URL = "https://huggingface.co/spaces/kugguk/recaman-next-move"
@@ -253,31 +265,69 @@ def inspect_model_arena(steps: int, base: int, modulus: int) -> tuple[str, str, 
         key=lambda agent: agent["bits_per_step"],
     )
     rows = "\n".join(
-        f"| {agent['name']} | {agent['auc']:.4f} | {agent['accuracy']:.2%} | "
-        f"{agent['bits_per_step']:.4f} | {agent['brier']:.4f} |"
+        f"| {agent['name']} | {agent['auc']:.4f} | {agent['phase_slip_ap']:.4f} | "
+        f"{agent['accuracy']:.2%} | {agent['bits_per_step']:.4f} | {agent['brier']:.4f} |"
         for agent in ranked
     )
     tower = next(agent for agent in ranked if agent["name"] == "Tower scout")
+    tower_challenger = next(
+        agent for agent in ranked if agent["name"] == "Tower-augmented challenger"
+    )
     report = f"""
 ## Forward-held-out Agent Arena
 
 Fit: **{payload['train_steps']:,}** chronological steps. Untouched test:
 **{payload['test_steps']:,}** later steps. Target: `{payload['target']}`.
 
-| inferred agent | AUC | accuracy | bits/step ↓ | Brier ↓ |
-| --- | ---: | ---: | ---: | ---: |
+| inferred agent | AUC | phase-slip AP | accuracy | bits/step ↓ | Brier ↓ |
+| --- | ---: | ---: | ---: | ---: | ---: |
 {rows}
 
 **Champion by held-out compression:** {payload['champion']} at
 **{payload['champion_bits_per_step']:.4f} bits/step**. Tower Scout receives
 **{payload['tower_added_to_ensemble']:.2%}** of the train-derived ensemble weight and
 scores **{tower['auc']:.4f} AUC** on the future block. It earns more influence only if
-those measurements improve.
+those measurements improve. The crossed Tower challenger scores
+**{tower_challenger['bits_per_step']:.4f} bits/step** and receives
+**{payload['tower_challenger_added_to_ensemble']:.2%}** ensemble weight.
 
 The Skeptic/prevalence control remains the 1-bit reference. {payload['leakage_boundary']}
 No AUC from the separate value-side hole task is mixed with this next-bit target.
 """
     return figure, report, payload
+
+
+def inspect_replay(
+    steps: int,
+    base: int,
+    modulus: int,
+    reveal: int,
+) -> tuple[int, object, object, str, dict]:
+    """Reveal only the requested prefix of the held-out inference block."""
+    payload = evaluate_replay(steps, base, modulus, reveal)
+    return (
+        payload["revealed"],
+        replay_probability_frame(payload),
+        replay_scoreboard_frame(payload),
+        replay_current_html(payload),
+        payload,
+    )
+
+
+def advance_replay(
+    reveal: int,
+    increment: int,
+    steps: int,
+    base: int,
+    modulus: int,
+) -> tuple[int, object, object, str, dict]:
+    """Advance the blind replay without exposing labels ahead of the cursor."""
+    return inspect_replay(steps, base, modulus, int(reveal) + int(increment))
+
+
+def reset_replay(steps: int, base: int, modulus: int) -> tuple[int, object, object, str, dict]:
+    """Start a fresh reveal at the beginning of the untouched block."""
+    return inspect_replay(steps, base, modulus, 64)
 
 
 BENCHMARK = TOWER_MEASUREMENTS["signed_tower"]["benchmark"]
@@ -289,32 +339,40 @@ REGISTRY_ROWS = "\n".join(
     for row in REGISTRY
 )
 
-HERO = f"""
+HERO = """
 <section class="lab-hero">
-  <div class="lab-kicker">RECAMÁN · FORWARD VALIDATION · MODEL EVOLUTION</div>
-  <h1>Next-Move Model Lab</h1>
-  <p>Fit inferred agents on the past, freeze them, and score them on the future.
-  Tower and modular features earn ensemble influence only by improving held-out
-  AUC, code length, or calibration.</p>
+  <div class="lab-kicker">BLIND REPLAY · CHAMPION VS CHALLENGER · TOWER UNDER TEST</div>
+  <h1>Recamán Next‑Move Arena</h1>
+  <p>Watch frozen agents predict an untouched future one step at a time. Exact
+  recurrence reveals the answer; code length crowns the champion. Tower features
+  earn influence only when they compress what they have not seen.</p>
   <div class="lab-metrics">
-    <div><b>80 / 20</b><span>chronological split</span></div>
-    <div><b>{BENCHMARK['auc_full_predecision']:.4f}</b><span>full process AUC</span></div>
-    <div><b>{BENCHMARK['auc_without_prev_is_down']:.4f}</b><span>arithmetic-only AUC</span></div>
-    <div><b>1.0000</b><span>oracle ceiling</span></div>
+    <div><b>80 / 20</b><span>past fit / future hidden</span></div>
+    <div><b>bits/step</b><span>primary promotion score</span></div>
+    <div><b>slip AP</b><span>rare-event inference test</span></div>
+    <div><b>weekly</b><span>champion–challenger season</span></div>
   </div>
 </section>
 """
 
 CSS = """
-.gradio-container{max-width:1220px!important;margin:auto!important}
-.lab-hero{padding:34px;border-radius:24px;background:linear-gradient(135deg,#17142f 0%,#2b225d 58%,#075968 100%);color:#fff;box-shadow:0 18px 48px rgba(23,20,47,.22);margin-bottom:18px}
+.gradio-container{max-width:1380px!important;margin:auto!important;background:radial-gradient(circle at 10% 0%,rgba(34,224,255,.09),transparent 32%),radial-gradient(circle at 90% 4%,rgba(255,61,240,.08),transparent 30%)}
+.lab-hero{padding:38px;border-radius:26px;background:linear-gradient(128deg,#080f1d 0%,#18143a 48%,#064f5a 100%);color:#fff;box-shadow:0 22px 64px rgba(5,10,24,.28);margin-bottom:18px;position:relative;overflow:hidden}
+.lab-hero:after{content:"";position:absolute;width:340px;height:340px;border:1px solid rgba(34,224,255,.22);border-radius:50%;right:-80px;top:-190px;box-shadow:0 0 0 52px rgba(34,224,255,.035),0 0 0 104px rgba(255,61,240,.025)}
 .lab-kicker{font-size:.78rem;font-weight:800;letter-spacing:.14em;color:#b9f5ef}
-.lab-hero h1{font-size:clamp(2.1rem,5vw,4.6rem);line-height:.96;margin:.35rem 0 .8rem;color:#fff}
+.lab-hero h1{font-size:clamp(2.2rem,5vw,4.8rem);line-height:.96;margin:.45rem 0 .9rem;color:#fff;max-width:900px;position:relative;z-index:1}
 .lab-hero p{max-width:800px;color:#e4e0ff;font-size:1.05rem;line-height:1.55}
 .lab-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:24px}
 .lab-metrics div{padding:14px 16px;border-radius:15px;background:rgba(255,255,255,.105);border:1px solid rgba(255,255,255,.13)}
 .lab-metrics b{display:block;font-size:1.35rem;color:#fff}.lab-metrics span{font-size:.78rem;color:#c8c3ef}
+.arena-head{margin:18px 0 12px}.arena-head span{font-size:.76rem;letter-spacing:.14em;font-weight:800;color:#137e89}.arena-head h2{font-size:clamp(1.65rem,3vw,2.55rem);margin:.2rem 0}.arena-head p{max-width:820px;opacity:.78}
+.arena-reveal{border-radius:22px;background:#091827;color:#e8f6ff;padding:18px;margin:10px 0 14px;box-shadow:0 15px 36px rgba(5,12,22,.16)}
+.arena-truth{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;padding:4px 2px 16px}.arena-truth>span:first-child{font-size:.75rem;letter-spacing:.12em;color:#8da6bf;font-weight:800}.arena-truth>strong{font-size:1.45rem}.arena-truth small{color:#8da6bf}.arena-slip{font-size:.72rem!important;color:#ffb457!important;border:1px solid rgba(255,180,87,.45);border-radius:999px;padding:3px 8px}
+.arena-agents{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.arena-agent{padding:12px;border-radius:14px;background:rgba(255,255,255,.055);border-top:2px solid #43ff9e}.arena-agent.wrong{border-top-color:#ff6b7a}.arena-agent span,.arena-agent small{display:block;color:#9db3c8;font-size:.72rem}.arena-agent strong{display:block;font-size:1.35rem;margin:4px 0}.arena-ledger{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1);color:#b9c9d8;font-size:.88rem}
+.arena-controls{align-items:end}.arena-score table{font-size:.85rem}.arena-score th{white-space:nowrap}
+.league-board{border-radius:24px;background:#091827;color:#e8f6ff;padding:22px;box-shadow:0 16px 40px rgba(5,12,22,.16);margin-bottom:16px}.league-season{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.league-season>span{font-size:.76rem;letter-spacing:.12em;color:#8da6bf;font-weight:800}.league-season>strong{margin-left:auto;border-radius:999px;padding:6px 10px;font-size:.76rem}.league-season>strong.hold{background:rgba(255,180,87,.16);color:#ffb457}.league-season>strong.promote{background:rgba(67,255,158,.14);color:#43ff9e}.league-season>small{flex-basis:100%;color:#8da6bf}.league-match{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin:22px 0}.league-match>div{padding:16px;border-radius:16px;background:rgba(255,255,255,.055)}.league-match span,.league-match small{display:block;color:#9db3c8;font-size:.75rem}.league-match h3{margin:5px 0;color:#fff}.league-match>div>strong{font-size:1.25rem}.league-match>b{color:#22e0ff}.league-verdict{border-top:1px solid rgba(255,255,255,.1);padding-top:14px;color:#b9c9d8}
 @media(max-width:760px){.lab-metrics{grid-template-columns:repeat(2,1fr)}.lab-hero{padding:24px 20px}}
+@media(max-width:980px){.arena-agents{grid-template-columns:repeat(2,minmax(0,1fr))}.league-match{grid-template-columns:1fr}.league-match>b{text-align:center}}
 """
 
 OVERVIEW = f"""
@@ -354,26 +412,155 @@ with gr.Blocks(
 ) as demo:
     gr.HTML(HERO)
 
-    with gr.Tabs():
-        with gr.Tab("Agent Arena"):
-            gr.Markdown(
-                "Every inferred agent fits only the first 80% of the exact stream. The final "
-                "20% stays untouched until scoring. Code length is the primary ranking: a model "
-                "that cannot compress future bits does not get to hide behind an attractive chart."
+    with gr.Tabs(selected="live-arena"):
+        with gr.Tab("Live arena", id="live-arena"):
+            gr.HTML(
+                '<div class="arena-head"><span>01 / BLIND INFERENCE REPLAY</span>'
+                '<h2>Predict first. Reveal truth second.</h2><p>The agents are fitted once '
+                'on the chronological past. Scrubbing reveals only a prefix of the untouched '
+                'future and recomputes every score through that point.</p></div>'
+            )
+            with gr.Row(elem_classes="arena-controls"):
+                replay_steps = gr.Slider(
+                    10_000,
+                    200_000,
+                    value=100_000,
+                    step=10_000,
+                    label="Exact season horizon",
+                    scale=3,
+                )
+                replay_base = gr.Slider(2, 97, value=3, step=1, label="Tower base", scale=1)
+                replay_modulus = gr.Slider(3, 997, value=210, step=1, label="Tower modulus", scale=1)
+                replay_reset = gr.Button("New blind season", variant="primary", scale=1)
+            replay_reveal = gr.Slider(
+                32,
+                40_000,
+                value=256,
+                step=1,
+                label="Revealed predictions from the future block",
             )
             with gr.Row():
-                arena_steps = gr.Slider(10_000, 200_000, value=100_000, step=10_000, label="Exact history horizon")
-                arena_base = gr.Slider(2, 97, value=3, step=1, label="Tower feature base")
-                arena_modulus = gr.Slider(3, 997, value=210, step=1, label="Tower feature modulus")
-            arena_button = gr.Button("Fit, freeze, and score agents", variant="primary")
-            arena_figure = gr.HTML()
-            arena_report = gr.Markdown()
-            arena_payload = gr.JSON(label="Forward-validation audit payload")
-            arena_button.click(
-                inspect_model_arena,
-                [arena_steps, arena_base, arena_modulus],
-                [arena_figure, arena_report, arena_payload],
-                api_name="model_arena",
+                replay_one = gr.Button("Reveal next move")
+                replay_twenty_five = gr.Button("Reveal 25")
+                replay_all = gr.Button("Reveal full season")
+            replay_increment_one = gr.Number(value=1, visible=False)
+            replay_increment_twenty_five = gr.Number(value=25, visible=False)
+            replay_increment_all = gr.Number(value=40_000, visible=False)
+            replay_current = gr.HTML()
+            replay_plot = gr.LinePlot(
+                x="step",
+                y="P(blocked)",
+                color="agent",
+                color_map=SERIES_COLOURS,
+                title="Frozen next-move probabilities vs exact revealed bit",
+                x_title="Recamán step n",
+                y_title="P(next move is blocked)",
+                y_lim=[0, 1],
+                tooltip="all",
+                height=430,
+                show_fullscreen_button=True,
+                show_export_button=True,
+                container=False,
+            )
+            replay_scoreboard = gr.Dataframe(
+                headers=[
+                    "agent",
+                    "bits/step ↓",
+                    "phase-slip AP ↑",
+                    "AUC ↑",
+                    "accuracy",
+                    "precision",
+                    "recall",
+                ],
+                interactive=False,
+                wrap=True,
+                elem_classes="arena-score",
+                label="Live inference leaderboard",
+            )
+            with gr.Accordion("Open replay audit payload", open=False):
+                replay_payload = gr.JSON(label="Only labels at or before the reveal cursor")
+
+            replay_outputs = [
+                replay_reveal,
+                replay_plot,
+                replay_scoreboard,
+                replay_current,
+                replay_payload,
+            ]
+            replay_inputs = [replay_steps, replay_base, replay_modulus, replay_reveal]
+            replay_reveal.release(
+                inspect_replay,
+                replay_inputs,
+                replay_outputs,
+                show_progress="minimal",
+                api_name="blind_replay",
+            )
+            replay_reset.click(
+                reset_replay,
+                [replay_steps, replay_base, replay_modulus],
+                replay_outputs,
+            )
+            replay_one.click(
+                advance_replay,
+                [replay_reveal, replay_increment_one, replay_steps, replay_base, replay_modulus],
+                replay_outputs,
+            )
+            replay_twenty_five.click(
+                advance_replay,
+                [replay_reveal, replay_increment_twenty_five, replay_steps, replay_base, replay_modulus],
+                replay_outputs,
+            )
+            replay_all.click(
+                advance_replay,
+                [replay_reveal, replay_increment_all, replay_steps, replay_base, replay_modulus],
+                replay_outputs,
+            )
+
+            with gr.Accordion("Full-season agent benchmark", open=False):
+                with gr.Row():
+                    arena_steps = gr.Slider(10_000, 200_000, value=100_000, step=10_000, label="Exact history horizon")
+                    arena_base = gr.Slider(2, 97, value=3, step=1, label="Tower feature base")
+                    arena_modulus = gr.Slider(3, 997, value=210, step=1, label="Tower feature modulus")
+                arena_button = gr.Button("Fit, freeze, and score complete season", variant="primary")
+                arena_figure = gr.HTML()
+                arena_report = gr.Markdown()
+                arena_payload = gr.JSON(label="Forward-validation audit payload")
+                arena_button.click(
+                    inspect_model_arena,
+                    [arena_steps, arena_base, arena_modulus],
+                    [arena_figure, arena_report, arena_payload],
+                    api_name="model_arena",
+                )
+
+        with gr.Tab("Weekly league"):
+            gr.HTML(
+                '<div class="arena-head"><span>02 / EVOLVING CHAMPION–CHALLENGER</span>'
+                '<h2>One sealed promotion test per season.</h2><p>The challenger may '
+                'search Tower bases and moduli on the middle block. It gets exactly one '
+                'look at the future block after a configuration is frozen.</p></div>'
+            )
+            gr.HTML(weekly_league_html(WEEKLY_ARENA))
+            gr.BarPlot(
+                value=weekly_validation_frame(WEEKLY_ARENA),
+                x="configuration",
+                y="validation bits/step",
+                color="family",
+                color_map={"Tower challenger": "#ffb457"},
+                title="Tower configuration selection — validation block only",
+                x_title="configuration",
+                y_title="bits/step ↓",
+                tooltip="all",
+                x_label_angle=-18,
+                height=360,
+                show_fullscreen_button=True,
+                show_export_button=True,
+                container=False,
+            )
+            gr.Markdown(
+                "Each merged weekly season extends the exact horizon by **50,000 steps**. "
+                "The ledger is generated by `scripts/run_weekly_arena.py`, checked in CI, "
+                "and reviewable before it changes the public champion. No GPU is needed for "
+                "these lightweight tabular agents; compute is spent on fresh exact labels."
             )
 
         with gr.Tab("Evidence map"):
@@ -481,6 +668,11 @@ with gr.Blocks(
 
     gr.Markdown(f"[Research repository]({REPO_URL}) · [Hugging Face Space]({SPACE_URL})")
 
+    demo.load(
+        inspect_replay,
+        [replay_steps, replay_base, replay_modulus, replay_reveal],
+        replay_outputs,
+    )
     demo.load(
         inspect_model_arena,
         [arena_steps, arena_base, arena_modulus],
