@@ -1,0 +1,78 @@
+# Demos and deployment
+
+[Home](Home.md) · [Findings](Findings.md) ·
+[Reproduce](Reproducing-the-Research.md) ·
+[Repository guide](Repository-Guide.md) · [Open questions](Open-Questions.md)
+
+The repository contains two separate Gradio applications because the two
+meanings of obstruction must remain distinct.
+
+## Applications
+
+| App | Subject | What it does not claim |
+| --- | --- | --- |
+| [Value-side hole explorer](https://github.com/EncapsulatorP/recaman/tree/main/apps/claude_ai_holes) | Catalogue counts, runs, span density, and model scores | It does not certify a submitted number as permanently absent |
+| [Process-bit explorer](https://github.com/EncapsulatorP/recaman/tree/main/apps/space) | Next-bit baseline, sequence prefixes, and phase slips | It does not identify missing integers |
+
+The repository does not currently encode stable public Space URLs, so this
+page links to source rather than guessing deployment addresses.
+
+## Run locally
+
+### Value-side explorer
+
+```bash
+python -m pip install -r apps/claude_ai_holes/requirements.txt
+python apps/claude_ai_holes/app.py
+```
+
+### Process-side explorer
+
+```bash
+python -m pip install -r apps/space/requirements.txt
+python apps/space/app.py
+```
+
+Gradio prints the local address after startup.
+
+## Data flow
+
+```text
+obstructions.txt + saved value results
+    └── sync_claude_ai_holes.py
+        └── apps/claude_ai_holes/{holes.txt, results.json, assets/}
+
+outputs/recaman_wheel_results.json
+    └── build_space_measurements.py
+        └── apps/space/measurements.json
+```
+
+Verify both applications are synchronized:
+
+```bash
+python scripts/sync_claude_ai_holes.py --check
+python scripts/make_claude_ai_holes_infographic.py --check
+python scripts/build_space_measurements.py --check
+python scripts/make_infographic.py --check
+```
+
+## Continuous deployment
+
+[`.github/workflows/ci-cd.yml`](https://github.com/EncapsulatorP/recaman/blob/main/.github/workflows/ci-cd.yml)
+runs tests and smoke checks, then can publish each app to a separate Hugging
+Face Space after a successful push to `main`.
+
+| Variable | App |
+| --- | --- |
+| `HF_HOLES_SPACE_REPO_ID` | Value-side hole explorer |
+| `HF_SPACE_REPO_ID` | Process-bit explorer |
+
+Both use the `HF_TOKEN` secret and the `huggingface-space` environment. If a
+repository variable is absent, that deployment is skipped without failing CI.
+
+See [`DEPLOYMENT.md`](https://github.com/EncapsulatorP/recaman/blob/main/DEPLOYMENT.md)
+for SDK pins, permissions, regeneration, and release details.
+
+---
+
+[← Open questions](Open-Questions.md) · [Home](Home.md)

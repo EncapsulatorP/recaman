@@ -1,263 +1,116 @@
-# Recaman Obstructions
+# Recamán Obstruction Research
 
-This repo studies the obstruction structure around the Recaman sequence from three angles:
+[![CI](https://github.com/EncapsulatorP/recaman/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/EncapsulatorP/recaman/actions/workflows/ci-cd.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-1. value-side obstruction classification on a curated list of missing / obstructed integers,
-2. process-side validation of the Recaman obstruction bit itself,
-3. geometric / phase-space visualization of the trajectory.
+Computational research into values that Recamán's sequence may never reach—or
+at least avoids for exceptionally long periods—and the blocked moves that
+create its distinctive dynamics.
 
-The goal is not just to get high classification scores. The goal is to find signals that survive honest temporal validation and remain interpretable in terms of the Recaman rule.
-
-The strongest current process-side conclusion is simple:
-
-- the classic `Theta_3` wheel is falsified as a predictor of the real obstruction bit,
-- the previous obstruction bit `b_{n-1}` is the dominant predictive state,
-- the observed stream is best described as near-perfect alternation plus rare phase-slip defects.
-
-That is a stronger empirical statement than the geometric story at the moment. The geometric / phase-slip framing remains useful as an exploratory language for where the rare defects occur, but the local closure problem for those defect locations is still open.
-
-## 🕳️ Snapshot: the value side (absolute holes)
-
-[![Holes](https://img.shields.io/badge/certified%20holes-1%2C277%2C399-b14da7)](obstructions.txt)
-[![Span](https://img.shields.io/badge/span-930%2C058%20%E2%86%92%204.29e9-00859b)](obstructions.txt)
-[![Concentration](https://img.shields.io/badge/97.2%25%20in-104%20runs-9e671a)](outputs/version_c_obstructions_results.json)
-[![Best honest AUC](https://img.shields.io/badge/best%20honest%20AUC-0.7586-0969da)](outputs/version_c_obstructions_results.json)
-
-![The integers Recaman never reaches: the rule, where the missing integers sit, how they clump into runs, and the measured separation from matched controls](outputs/recaman_holes_infographic_claude-ai.svg)
-
-The value-side subject of this repo: the `1,277,399` integers in [`obstructions.txt`](obstructions.txt) that the sequence never reaches, between `930,058` and `4,293,242,951`. Rebuild with `python scripts/make_claude_ai_holes_infographic.py`; every number is recomputed from the catalogue and from the saved runs in [`outputs/`](outputs/), and the structural totals are asserted against [`outputs/version_c_obstructions_results.json`](outputs/version_c_obstructions_results.json) by the test suite. CI fails if the file drifts.
-
-## 🔁 Snapshot: the process side (obstruction bit)
-
-![Predicting Recaman's next move: the rule, the measured transition, a real phase slip, and the slip rate falling with the horizon](outputs/recaman_next_move_infographic.svg)
-
-A **different label on a different object**: the process-side bit `b(n)`, whether the backward move was blocked at step `n`. A blocked step is not a hole, and predicting `b(n)` says nothing about which integers go missing. Rebuild with `python scripts/make_infographic.py`.
-
-## 🚀 Live Demos
-
-Two Gradio apps, deployed to separate Hugging Face Spaces:
-
-- [`apps/claude_ai_holes/`](apps/claude_ai_holes/) — **Claude.ai version**: a structure explorer for the hole catalogue. It reports how many holes there are, how they distribute across powers of ten, how they clump into runs, and what the models actually score. It makes no per-number claim, because the honest measured separation tops out at AUC `0.7586`.
-- [`apps/space/`](apps/space/) — the one-step obstruction-bit predictor, with a sequence explorer and two API endpoints.
-
-See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the deployment and regeneration workflow for both.
-
-## 3D Snapshot
-
-Current 3D phase-space render from `scripts/recaman_phase_space_3d.py`:
-
-![Recaman 3D arc-lift render](outputs/recaman_phase_arc_readme.png)
-
-## Definitions
-
-### What is an "obstruction" here?
-
-The root file [`obstructions.txt`](obstructions.txt) is a list of integers and integer ranges treated as positive examples on the value side. In this repo, those are the candidate "obstructed" or "missing" values we are trying to distinguish from matched non-obstruction controls.
-
-There are two different labels in this project, and they should not be confused:
-
-- Value-side label: `y = 1` means "this integer is in the obstruction list"; `y = 0` means "matched control integer not in that list".
-- Process-side label: `b_n = 1` means the Recaman down-move was blocked at step `n`, so the sequence was forced to move up. `b_n = 0` means the down-move was free.
-
-In code, the process-side definition is explicit in [`scripts/recaman_wheel_validator.py`](scripts/recaman_wheel_validator.py): `b[n] = 1` is "blocked/up", `b[n] = 0` is "free/down".
-
-### What do the `194,358` pairs mean?
-
-The random-matrix search expands the ranges in `obstructions.txt` into individual integers. After expansion, the current saved run contains:
-
-- `194,358` positive integers from the obstruction list,
-- `194,358` controls sampled outside that list,
-- `1` matched control per positive,
-- controls matched by digit length.
-
-So the "194k pairs" means a balanced binary dataset of `194,358` positives versus `194,358` matched random controls, used by [`scripts/321_210_randmat.py`](scripts/321_210_randmat.py) and saved in [`outputs/best_obstructions_random_20260512_172100.json`](outputs/best_obstructions_random_20260512_172100.json).
-
-## Scope And Goals
-
-The repo is trying to answer four concrete questions:
-
-1. Can obstruction-list values be separated from matched controls by simple arithmetic / digit / residue features?
-2. Can obstruction events be modeled honestly when temporal leakage is removed?
-3. Is the classic `Theta_3` wheel actually predictive of the real Recaman obstruction bit?
-4. What geometric structure shows up when the sequence is embedded in 3D phase space?
-
-## Best Results First
-
-### 1. Strongest process-side result: previous-bit conditioning dominates, and the `Theta_3` wheel is falsified
-
-From [`outputs/recaman_wheel_results.json`](outputs/recaman_wheel_results.json):
-
-- `q_210 = 0.500007`
-- `q_321 = 0.499996`
-- `|Δq| = 0.000011`
-- `q(prev=0) = 0.998919`
-- `q(prev=1) = 0.001087`
-- `|q(prev=0) - q(prev=1)| = 0.997832`
-- phase-slip rate `P(b_n = b_{n-1}) = 0.001084`
-- mean alternating run length `≈ 415`
-
-Interpretation:
-
-- As a predictive state for the real obstruction bit, the two-state `Theta_3` wheel fails.
-- As a first-order descriptive model, the previous bit almost completely determines the next one.
-- The obstruction stream is therefore best summarised as "alternation with rare defects", not as a useful `Theta_3` Markov wheel.
-
-This does **not** mean the phase-slip locations are solved. It means the empirical closure problem has sharpened: the right thing to model is where the rare defects occur, not whether the symbolic wheel flips.
-
-### 2. Best trustworthy value-side result: dataset `D` reaches mean AUC `0.7586`
-
-From [`outputs/version_c_obstructions_results.json`](outputs/version_c_obstructions_results.json), using:
-
-- forward-chaining CV,
-- `purge_contexts = 1`,
-- time-local control generation,
-- one matched control per positive context.
-
-Dataset `D` scores:
-
-- fold AUCs: `0.7884, 0.7569, 0.7863, 0.7618, 0.6997`
-- mean AUC: `0.7586`
-
-This is currently the most meaningful value-side score in the repo because it survives the leakage fixes and uses the hardest, most local task formulation.
-
-### 3. Random-matrix search gives moderate value-side signal, but it is not the main process-side explanation
-
-From [`outputs/best_obstructions_random_20260512_172100.json`](outputs/best_obstructions_random_20260512_172100.json):
-
-- positives: `194,358`
-- controls: `194,358`
-- feature dimension: `42`
-- best linear-code AUC: `0.5994`
-- random-forest CV mean AUC: `0.6633`
-
-This is weaker than dataset `D`, but it is also a cleaner baseline than the very high `A/B/C` endpoint scores below.
-
-It also answers a different question from the wheel analysis. The `42`-feature search is about value-side obstruction-list membership. It does **not** explain the real obstruction bit process nearly as well as the previous-bit / phase-slip picture does.
-
-### 4. High AUC on `A/B/C`, but these are easier tasks
-
-Current `Version C` endpoint / anchor tasks score:
-
-- Dataset `A`: mean AUC `0.9961`
-- Dataset `B`: mean AUC `0.9964`
-- Dataset `C`: mean AUC `0.9944`
-
-These numbers are real outputs, but they should not be treated as the main scientific result. They are much easier discrimination problems than `D`.
-
-## Why `0.7586` Is Better Than `0.99`
-
-This is the key interpretation point in the repo.
-
-The `0.99+` scores on `A/B/C` are high because those tasks ask an easier question: given a known obstruction event, can we separate its start or end anchor from a broad matched random control? That setup still contains strong structural cues in the value itself and in coarse event geometry.
-
-Dataset `D` is harder and more honest:
-
-- it predicts gap dynamics rather than just endpoint identity,
-- it uses local matched controls built from the same event context,
-- it is evaluated with forward CV instead of train-on-future blocked folds,
-- the earlier future-information leakage in control generation was removed.
-
-So `0.7586` matters more scientifically than `0.996` because it is closer to the actual closure problem: can local state predict what kind of obstruction pattern happens next, not just identify a conspicuous endpoint after the fact?
-
-## Approaches Taken
-
-### 1. Random matched-control feature search
-
-[`scripts/321_210_randmat.py`](scripts/321_210_randmat.py) expands the obstruction list into individual integers, builds a 42-dimensional feature vector per integer, samples matched random controls, then searches over random linear projections and reranks candidates with random-forest CV.
-
-This is the source of the `194,358` positive / `194,358` control dataset and the `0.6633` RF-CV result.
-
-### 2. Event-structured "Version C" modeling
-
-[`scripts/321_210_version_c.py`](scripts/321_210_version_c.py) compresses the obstruction list into event intervals and builds four datasets:
-
-- `A`: singleton obstruction starts,
-- `B`: range starts,
-- `C`: range ends,
-- `D`: gap dynamics between successive events.
-
-The current version uses:
-
-- forward CV by default,
-- a purge window between train and test blocks,
-- time-local visible blocked points only,
-- matched controls per event context.
-
-This is the main leakage-reduced value-side pipeline.
-
-### 3. Wheel / phase-slip validation
-
-[`scripts/recaman_wheel_validator.py`](scripts/recaman_wheel_validator.py) runs the true Recaman generator and tests whether the symbolic wheel state predicts the real obstruction bit. Quantitative results are in [Best Results First §1](#1-strongest-process-side-result-previous-bit-conditioning-dominates-and-the-theta_3-wheel-is-falsified).
-
-### 4. 3D phase-space exploration
-
-[`scripts/recaman_phase_space_3d.py`](scripts/recaman_phase_space_3d.py) generates delay embeddings, spatiotemporal embeddings, and lifted-arc 3D renders of the Recaman trajectory. This part is exploratory and geometric rather than a predictive benchmark. At present the geometry is best treated as a way to generate hypotheses about phase-slip localization, not as a closed explanation of the process.
-
-## Dataset Summary
-
-From the current `Version C` run:
-
-- total events: `3102`
-- singleton events: `2535`
-- range events: `567`
-- range length max: `368,058`
-- event start span: `930,058` to `4,293,242,951`
-
-## Repo Layout
+Recamán's sequence starts at `a(0) = 0`. At step `n` it subtracts `n` when the
+result is positive and has not appeared before; otherwise it adds `n`:
 
 ```text
-.
-|-- README.md
-|-- obstructions.txt
-|-- scripts/
-|-- outputs/
-`-- supporting_docs/
+a(n) = a(n - 1) - n    if the result is positive and unvisited
+a(n) = a(n - 1) + n    otherwise
 ```
 
-### Main scripts
+The repository tests whether persistent gaps have detectable structure,
+whether blocked moves can be predicted without temporal leakage, and which
+patterns survive honest validation.
 
-- `scripts/321_210_randmat.py`: random matched-control search on expanded obstruction integers.
-- `scripts/321_210_version_c.py`: event-based obstruction modeling with forward CV.
-- `scripts/recaman_wheel_validator.py`: long-run wheel and phase-slip validation.
-- `scripts/recaman_wheel_honest.py`: honest wheel null comparison.
-- `scripts/recaman_modm_scan.py`: modular-state scan for obstruction separation.
-- `scripts/recaman_heldout.py`: held-out checks for candidate predictors.
-- `scripts/recaman_phase_space_3d.py`: 3D phase-space plots.
-- `scripts/recaman_seq_distribution.py`: large-sample distribution histogram.
+> **Research status:** this is empirical work, not a proof that any integer is
+> absent forever. Here, a *catalogued hole* means membership in
+> [`obstructions.txt`](obstructions.txt). The catalogue is evidence for
+> candidate absolute obstructions—or, conservatively, long-lasting unvisited
+> values. Its source computation and verification horizon still need to be
+> recorded before stronger claims can be audited.
 
-## Typical Usage
+## Two questions, two meanings
 
-Run from the repo root.
+| Side | Question | Object |
+| --- | --- | --- |
+| **Value** | Which integers remain unvisited? | Catalogue membership in [`obstructions.txt`](obstructions.txt) |
+| **Process** | When is the attempted backward move blocked? | The step bit `b(n)`: blocked/up = `1`, free/down = `0` |
+
+A blocked step is not a missing integer. Predicting `b(n)` does not identify
+which values are permanently absent.
+
+## Current picture
+
+- The catalogue expands to **1,277,399 values** in **3,102 events**, spanning
+  `930,058` to `4,293,242,951`. These are exact statements about the file, not
+  a theorem about the infinite sequence.
+- The strongest leakage-reduced value-side result is dataset `D` with mean AUC
+  **0.7586** under forward-chaining validation. It shows statistical
+  separation, not a per-integer test.
+- On a saved **10,000,000-step** run, the proposed `Theta_3` wheel has
+  essentially no predictive separation (`|delta q| = 0.000011`).
+- The process bit is instead almost alternating: same-bit phase slips occur at
+  rate **0.001084** in that run. Explaining where those rare slips occur remains
+  open.
+
+See [Findings](wiki/Findings.md) for the measurements and their limits.
+
+## Navigate the research
+
+| If you want to… | Start here |
+| --- | --- |
+| Understand the purpose and terminology | [Concepts and scope](wiki/Concepts-and-Scope.md) |
+| Review the best-supported results | [Findings](wiki/Findings.md) |
+| Audit the hole catalogue and saved outputs | [Data and provenance](wiki/Data-and-Provenance.md) |
+| Understand controls, leakage, and validation | [Methods and validation](wiki/Methods-and-Validation.md) |
+| Reproduce an experiment | [Reproducing the research](wiki/Reproducing-the-Research.md) |
+| Find a script or output | [Repository guide](wiki/Repository-Guide.md) |
+| See what remains unresolved | [Open questions](wiki/Open-Questions.md) |
+| Run or deploy the interactive apps | [Demos and deployment](wiki/Demos-and-Deployment.md) |
+
+The full entry point is the [research wiki](wiki/Home.md).
+
+## Quick start
+
+Python 3.10–3.12 is covered by CI.
 
 ```powershell
-python .\scripts\321_210_version_c.py --input-file .\obstructions.txt --datasets ABCD --save-json .\outputs\version_c_obstructions_results.json
-python .\scripts\321_210_randmat.py --input-file .\obstructions.txt --controls-per-positive 1 --save-best-file .\outputs\best_obstructions_random.json
-python .\scripts\recaman_wheel_validator.py
-python .\scripts\recaman_phase_space_3d.py --steps 2800 --mode delay --tau 2 --save .\outputs\recaman_phase_delay.png
-python .\scripts\recaman_phase_space_3d.py --steps 2800 --mode arc-lift --twist 1.8 --save .\outputs\recaman_phase_arc.png
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+python run_all.py --dry-run
 ```
 
-## Supporting Docs
+Focused reproductions:
 
-- [`supporting_docs/twistor_splitor_recaman_dossier.pdf`](supporting_docs/twistor_splitor_recaman_dossier.pdf)
-- [`supporting_docs/recaman_final_math.md`](supporting_docs/recaman_final_math.md)
-- [`supporting_docs/recaman_final_math.pdf`](supporting_docs/recaman_final_math.pdf)
-- [`supporting_docs/Recaman_Wheel_Validation.docx`](supporting_docs/Recaman_Wheel_Validation.docx)
+```powershell
+# Leakage-reduced value-side benchmark
+python .\scripts\321_210_version_c.py --input-file .\obstructions.txt --datasets D
 
-## Further Work
+# Long-run process-side wheel and phase-slip validation
+python .\scripts\recaman_wheel_validator.py
+```
 
-1. Replace broad random controls in `A/B/C` with tighter local controls so those tasks measure genuine local prediction instead of easy endpoint separability.
-2. Ablate raw anchor-value features to see how much of the `0.99+` signal is coming from trivial value identity.
-3. Push the `D` pipeline further: richer local gap features, better density summaries, and stricter temporal purging.
-4. Reconcile the process-side phase-slip picture with the value-side obstruction models.
-5. Test whether the moderate `0.66` random-matrix signal survives under stronger locality constraints and alternative control matching.
-6. Add a single experiment index file so each saved JSON can be traced to the exact command and code version that produced it.
+The long-run experiments can be compute-intensive. Commands for individual
+results and generated assets are listed in
+[Reproducing the research](wiki/Reproducing-the-Research.md).
 
-## License
+## Repository map
 
-Released under the [MIT License](LICENSE).
+| Path | Purpose |
+| --- | --- |
+| [`obstructions.txt`](obstructions.txt) | Catalogued value-side holes and ranges |
+| [`scripts/`](scripts/) | Generators, feature searches, validators, and plots |
+| [`outputs/`](outputs/) | Saved measurements and generated figures |
+| [`apps/`](apps/) | Two separate Gradio explorers |
+| [`supporting_docs/`](supporting_docs/) | Extended mathematical notes and papers |
+| [`wiki/`](wiki/) | Navigable research documentation |
+| [`tests/`](tests/) | Unit, provenance, and smoke checks |
 
-<img src="https://raw.githubusercontent.com/kugguk2022/Zyntalic_idiom/main/assets/online-presence.svg" alt="Online presence" width="180">
+## Further reading
 
-<sub>The "online presence" mark is kugguk project artwork and does not modify or restrict the MIT License.</sub>
+- [Extended mathematical note](supporting_docs/recaman_final_math.md)
+- [CI and deployment](DEPLOYMENT.md)
+- [MIT License](LICENSE)
 
+<img src="assets/online-presence.svg" alt="Online presence" width="160">
+
+<sub>The online-presence mark is project artwork and does not modify the MIT License.</sub>
