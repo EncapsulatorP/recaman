@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
-"""Derive the Space's measurement file from the saved validator run.
+"""Sync the files that make `apps/space/` self-contained.
 
-The Gradio Space is deployed on its own from `apps/space/`, so it cannot read
-`outputs/`. This script projects the numbers it needs out of
-`outputs/recaman_wheel_results.json` into `apps/space/measurements.json`, which
-keeps the Space self-contained without hard-coding constants by hand.
+The Space is deployed from `apps/space/` with that directory as its own root,
+so it cannot read `obstructions.txt`, `outputs/` or `assets/` at run time.
+Rather than hand-copying — or hotlinking another repository — every file the
+Space needs is projected out of this repository here, and CI fails if any of
+them drifts.
 
-Run it whenever the validator run is refreshed:
+Three things are synced:
 
-    python scripts/build_space_measurements.py
+* `holes.txt` — a verbatim copy of the hole catalogue `obstructions.txt`. The
+  Space recomputes the whole structural summary from it, so there is no derived
+  copy of those numbers to fall out of date.
+* `results.json` — the measured value-side model scores, which cannot be
+  recomputed cheaply, read from the saved runs in `outputs/`.
+* `assets/online-presence.svg` — the project mark, copied from `assets/`.
+
+    python scripts/sync_space.py
+    python scripts/sync_space.py --check     # CI: fail if anything is stale
 """
 
 from __future__ import annotations
@@ -19,101 +28,118 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SOURCE = REPO_ROOT / "outputs" / "recaman_wheel_results.json"
-DEFAULT_TARGET = REPO_ROOT / "apps" / "space" / "measurements.json"
+SPACE_DIR = REPO_ROOT / "apps" / "space"
+
+CATALOGUE = REPO_ROOT / "obstructions.txt"
+VERSION_C = REPO_ROOT / "outputs" / "version_c_obstructions_results.json"
+RANDOM_MATRIX = REPO_ROOT / "outputs" / "best_obstructions_random_20260512_172100.json"
+BRAND_MARK = REPO_ROOT / "assets" / "online-presence.svg"
+
+SPACE_CATALOGUE = SPACE_DIR / "holes.txt"
+SPACE_RESULTS = SPACE_DIR / "results.json"
+SPACE_BRAND_MARK = SPACE_DIR / "assets" / "online-presence.svg"
+
+# What each Version C dataset actually asks, as documented in the repo README.
+DATASET_LABELS = {
+    "A": "singleton hole starts",
+    "B": "hole-range starts",
+    "C": "hole-range ends",
+    "D": "gap dynamics between successive holes",
+}
 
 
-def slip_rate_from_conditionals(q_prev0: float, q_prev1: float, p_b0: float) -> float:
-    """P(b_n == b_{n-1}) given the two conditionals and the b=0 share.
+def build_results() -> dict[str, object]:
+    """Collect the measured value-side scores the Space reports."""
+    version_c = json.loads(VERSION_C.read_text(encoding="utf-8"))
+    random_matrix = json.loads(RANDOM_MATRIX.read_text(encoding="utf-8"))
 
-    `q_prev0` is P(b_n = 1 | b_{n-1} = 0) and `q_prev1` is P(b_n = 1 | b_{n-1} = 1),
-    so a repeat happens either after a 0 that stays 0, or after a 1 that stays 1.
-    """
-    return p_b0 * (1.0 - q_prev0) + (1.0 - p_b0) * q_prev1
-
-
-def build(source: Path) -> dict[str, object]:
-    results = json.loads(source.read_text(encoding="utf-8"))
-
-    bit_history = results["step2b_bit_history_wheel"]
-    slip = results["step3_phase_slip"]
-    theta3 = results["step2a_theta3_wheel"]
-    closure = results["step5_closure"]
-
-    q_prev0 = bit_history["q_prev0"]
-    q_prev1 = bit_history["q_prev1"]
-
-    horizon = []
-    for row in results["step6_stationarity"]:
-        horizon.append(
-            {
-                "n": row["n"],
-                "q_prev0": row["q_prev0"],
-                "q_prev1": row["q_prev1"],
-                "slip_rate": round(
-                    slip_rate_from_conditionals(
-                        row["q_prev0"], row["q_prev1"], row["emp_p_b0"]
-                    ),
-                    9,
-                ),
-            }
-        )
+    candidate = random_matrix["candidate"]
+    dataset = random_matrix["dataset"]
+    search = random_matrix["search"]
 
     return {
-        "source": "outputs/recaman_wheel_results.json",
-        "generator": "scripts/build_space_measurements.py",
-        "empirical_horizon": results["N_main"],
-        "transition": {
-            "p00": round(1.0 - q_prev0, 9),
-            "p01": q_prev0,
-            "p10": round(1.0 - q_prev1, 9),
-            "p11": q_prev1,
+        "generator": "scripts/sync_space.py",
+        "sources": {
+            "catalogue": "obstructions.txt",
+            "version_c": "outputs/version_c_obstructions_results.json",
+            "random_matrix": "outputs/best_obstructions_random_20260512_172100.json",
         },
-        "stationary": {
-            "p_b0": bit_history["emp_b0"],
-            "p_b1": bit_history["emp_b1"],
+        "random_matrix": {
+            "script": "scripts/321_210_randmat.py",
+            "positives": dataset["positives"],
+            "controls": dataset["controls"],
+            "feature_dim": dataset["feature_dim"],
+            "positive_digit_lengths": dataset["positive_digit_lengths"],
+            "controls_per_positive": search["controls_per_positive"],
+            "cv_folds": search["cv_folds"],
+            "trials": search["trials"],
+            "code_auc": candidate["code_auc"],
+            "rf_cv_auc_mean": candidate["rf_cv_auc_mean"],
         },
-        "phase_slip": {
-            "rate": slip["slip_rate"],
-            "count": slip["n_slips"],
-            "pairs": slip["n_pairs"],
-            "mean_run_length": slip["mean_run_length"],
+        "version_c": {
+            "script": "scripts/321_210_version_c.py",
+            "cv_scheme": version_c["cv_scheme"],
+            "purge_contexts": version_c["purge_contexts"],
+            "datasets": {
+                name: {
+                    "label": DATASET_LABELS[name],
+                    "contexts": payload["contexts"],
+                    "examples": payload["examples"],
+                    "feature_dim": payload["feature_dim"],
+                    "mean_auc": payload["mean_auc"],
+                    "fold_auc": payload["auc"],
+                }
+                for name, payload in sorted(version_c["datasets"].items())
+            },
         },
-        "horizon_scan": horizon,
-        "theta3_wheel": {
-            "verdict": theta3["verdict"],
-            "abs_delta_q": theta3["abs_delta_q"],
-        },
-        "accuracy": {
-            "majority_baseline": closure["accuracy_majority_baseline"],
-            "previous_bit_only": closure["accuracy_bit_history_only"],
-        },
+    }
+
+
+def derived_files() -> dict[Path, bytes]:
+    """Map each file the Space needs to the exact bytes it should hold.
+
+    Copies are read, compared and written as bytes so a synced file matches its
+    source down to the line endings, whichever platform runs the sync.
+    """
+    return {
+        SPACE_CATALOGUE: CATALOGUE.read_bytes(),
+        SPACE_RESULTS: (json.dumps(build_results(), indent=2) + "\n").encode("utf-8"),
+        SPACE_BRAND_MARK: BRAND_MARK.read_bytes(),
     }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
-    parser.add_argument("--target", type=Path, default=DEFAULT_TARGET)
     parser.add_argument(
         "--check",
         action="store_true",
-        help="fail instead of writing if the target is out of date",
+        help="report and fail instead of writing if anything is out of date",
     )
     args = parser.parse_args()
 
-    payload = json.dumps(build(args.source), indent=2) + "\n"
+    stale: list[Path] = []
+    for target, content in derived_files().items():
+        relative = target.relative_to(REPO_ROOT)
+        current = target.read_bytes() if target.exists() else None
 
-    if args.check:
-        current = args.target.read_text(encoding="utf-8") if args.target.exists() else ""
-        if current != payload:
-            print(f"{args.target} is out of date; re-run without --check")
-            return 1
-        print(f"{args.target} is up to date")
-        return 0
+        if current == content:
+            if args.check:
+                print(f"up to date: {relative}")
+            continue
 
-    args.target.write_text(payload, encoding="utf-8")
-    print(f"wrote {args.target}")
+        if args.check:
+            stale.append(relative)
+            continue
+
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
+        print(f"wrote {relative}")
+
+    if stale:
+        for relative in stale:
+            print(f"OUT OF DATE: {relative}")
+        print("run `python scripts/sync_space.py` and commit the result")
+        return 1
     return 0
 
 

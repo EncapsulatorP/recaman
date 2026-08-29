@@ -1,0 +1,83 @@
+{
+  "generator": "scripts/sync_space.py",
+  "sources": {
+    "catalogue": "obstructions.txt",
+    "version_c": "outputs/version_c_obstructions_results.json",
+    "random_matrix": "outputs/best_obstructions_random_20260512_172100.json"
+  },
+  "random_matrix": {
+    "script": "scripts/321_210_randmat.py",
+    "positives": 194358,
+    "controls": 194358,
+    "feature_dim": 42,
+    "positive_digit_lengths": "6d:12, 7d:90, 8d:23006, 9d:33622, 10d:137628",
+    "controls_per_positive": 1,
+    "cv_folds": 3,
+    "trials": 6000,
+    "code_auc": 0.5994479305555556,
+    "rf_cv_auc_mean": 0.6632902197335108
+  },
+  "version_c": {
+    "script": "scripts/321_210_version_c.py",
+    "cv_scheme": "forward",
+    "purge_contexts": 1,
+    "datasets": {
+      "A": {
+        "label": "singleton hole starts",
+        "contexts": 2535,
+        "examples": 5070,
+        "feature_dim": 142,
+        "mean_auc": 0.996141451823054,
+        "fold_auc": [
+          0.9966690698545233,
+          0.9911752706380744,
+          0.993379528761708,
+          0.9998371554996519,
+          0.9996462343613126
+        ]
+      },
+      "B": {
+        "label": "hole-range starts",
+        "contexts": 567,
+        "examples": 1134,
+        "feature_dim": 142,
+        "mean_auc": 0.9963933818965225,
+        "fold_auc": [
+          0.989584487534626,
+          0.9963434903047091,
+          1.0,
+          0.9960389316432774,
+          1.0
+        ]
+      },
+      "C": {
+        "label": "hole-range ends",
+        "contexts": 567,
+        "examples": 1134,
+        "feature_dim": 142,
+        "mean_auc": 0.9944191866815307,
+        "fold_auc": [
+          0.978393351800554,
+          0.9981163434903046,
+          0.9978497057492078,
+          0.9977365323675872,
+          1.0
+        ]
+      },
+      "D": {
+        "label": "gap dynamics between successive holes",
+        "contexts": 3101,
+        "examples": 6202,
+        "feature_dim": 142,
+        "mean_auc": 0.7586356315490144,
+        "fold_auc": [
+          0.7883564231973631,
+          0.7569335064293704,
+          0.786339879306668,
+          0.7618420511132145,
+          0.6997062976984556
+        ]
+      }
+    }
+  }
+}

@@ -49,18 +49,20 @@ def main() -> int:
     args = parser.parse_args()
 
     svg = render(args.steps)
+    # Written as bytes with LF endings so the file is identical on any platform.
+    payload = svg.encode("utf-8")
 
     if args.check:
-        current = args.target.read_text(encoding="utf-8") if args.target.exists() else ""
-        if current != svg:
+        current = args.target.read_bytes() if args.target.exists() else b""
+        if current != payload:
             print(f"{args.target} is out of date; re-run without --check")
             return 1
         print(f"{args.target} is up to date")
         return 0
 
     args.target.parent.mkdir(parents=True, exist_ok=True)
-    args.target.write_text(svg, encoding="utf-8")
-    print(f"wrote {args.target} ({len(svg.encode('utf-8')) / 1024:.1f} KiB)")
+    args.target.write_bytes(payload)
+    print(f"wrote {args.target} ({len(payload) / 1024:.1f} KiB)")
     return 0
 
 
