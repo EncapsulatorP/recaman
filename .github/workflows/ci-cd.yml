@@ -47,6 +47,12 @@ jobs:
       - name: Run unit tests
         run: python -m pytest -q
 
+      - name: Verify generated Space measurements are current
+        run: python scripts/build_space_measurements.py --check
+
+      - name: Verify the infographic matches the saved run
+        run: python scripts/make_infographic.py --check
+
       - name: Validate experiment runner
         run: python run_all.py --dry-run
 
@@ -96,10 +102,24 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r apps/space/requirements.txt
 
-      - name: Import the Space application
+      - name: Check the pinned SDK matches the Space card
         run: >-
           python -c
-          "import sys; sys.path.insert(0, 'apps/space'); import app; assert app.demo is not None"
+          "import pathlib, re, gradio;
+          card = pathlib.Path('apps/space/README.md').read_text(encoding='utf-8');
+          pinned = re.search(r'^sdk_version:\s*(\S+)$', card, re.M).group(1);
+          assert pinned == gradio.__version__, f'README pins {pinned}, installed {gradio.__version__}'"
+
+      - name: Import the Space application and exercise its endpoints
+        run: >-
+          python -c
+          "import sys; sys.path.insert(0, 'apps/space'); import app;
+          assert app.demo is not None;
+          card, payload = app.predict(app.DEFAULT_CHOICE);
+          assert payload['predicted_bit'] in (0, 1);
+          arc, ribbon, report = app.simulate(5000, 24);
+          assert arc.startswith('<svg') and ribbon.startswith('<svg') and report;
+          assert app.simulate_bits(64)['steps'] == 64"
 
   deploy-space:
     name: Deploy Hugging Face Space

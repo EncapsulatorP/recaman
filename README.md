@@ -15,6 +15,16 @@ The strongest current process-side conclusion is simple:
 - the observed stream is best described as near-perfect alternation plus rare phase-slip defects.
 
 That is a stronger empirical statement than the geometric story at the moment. The geometric / phase-slip framing remains useful as an exploratory language for where the rare defects occur, but the local closure problem for those defect locations is still open.
+## Snapshot
+
+![Predicting Recaman's next move: the rule, the measured transition, a real phase slip, and the slip rate falling with the horizon](outputs/recaman_next_move_infographic.svg)
+
+The figure is generated, not drawn: `python scripts/make_infographic.py` rebuilds it as SVG from [`outputs/recaman_wheel_results.json`](outputs/recaman_wheel_results.json) plus a live run of the sequence, so it cannot drift from the numbers it reports. CI fails if it does.
+
+## Live Demo
+
+[`apps/space/`](apps/space/) is a Gradio app deployed to Hugging Face Spaces. It serves the one-step predictor, an explorer that regenerates the sequence and recomputes the same statistics on your own prefix, and the method-and-limits page. Two API endpoints are exposed for programmatic use. See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the deployment and regeneration workflow.
+
 ## 3D Snapshot
 
 Current 3D phase-space render from `scripts/recaman_phase_space_3d.py`:

@@ -1,13 +1,58 @@
-# CI/CD
+# CI/CD and the Hugging Face Space
 
-The GitHub Actions workflow in `.github/workflows/ci-cd.yml` provides:
+## What CI checks
 
-- Python 3.10, 3.11, and 3.12 test coverage;
+The GitHub Actions workflow in `.github/workflows/ci-cd.yml` runs:
+
+- Python 3.10, 3.11 and 3.12 test coverage;
 - source compilation and unit tests;
+- that the generated Space measurements and the infographic are both in step
+  with `outputs/recaman_wheel_results.json` (`--check` modes below);
 - smoke tests for the experiment runner, density analysis, forward validation,
   and phase-space rendering;
-- a separate import test for the Gradio Space;
+- a Space job that installs the pinned Gradio, verifies the pin matches the
+  Space card, imports the app and exercises both API endpoints;
 - guarded deployment to Hugging Face after all CI jobs pass on `main`.
+
+## Regenerating the derived files
+
+Two files in the tree are generated, and CI fails if they drift:
+
+```bash
+python scripts/build_space_measurements.py   # apps/space/measurements.json
+python scripts/make_infographic.py           # outputs/recaman_next_move_infographic.svg
+```
+
+Both read `outputs/recaman_wheel_results.json`, so re-run them whenever the
+validator run is refreshed. Add `--check` to either to verify without writing,
+which is what CI does.
+
+## The Space
+
+`apps/space/` is deployed on its own, with that directory as the Space root.
+Its modules are therefore top-level there (`import predictor`, not
+`import apps.space.predictor`); `tests/conftest.py` puts the same directory on
+`sys.path` so the tests exercise the deployed layout. The Space depends on
+Gradio alone — the figures are SVG generated at request time, so there is no
+plotting stack and no image asset to keep in sync.
+
+### Bumping the Gradio pin
+
+The version appears in two places and CI asserts they agree:
+
+1. `apps/space/requirements.txt` — `gradio==5.50.0`
+2. `apps/space/README.md` — `sdk_version: 5.50.0`
+
+Change both together, then run the Space job locally if you can. Moving across
+a major version (5 → 6) is a breaking change for the SDK and should be its own
+commit.
+
+### Still to do before the Space card is complete
+
+The repository has no `LICENSE` file, so the Space card omits the `license:`
+field and Hugging Face will show the Space as unlicensed. Add a `LICENSE` at the
+repository root and the matching `license:` key to `apps/space/README.md` when
+you have decided on terms.
 
 ## Enable Hugging Face deployment
 
