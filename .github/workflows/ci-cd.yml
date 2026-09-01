@@ -49,19 +49,19 @@ jobs:
       - name: Run unit tests
         run: python -m pytest -q
 
-      - name: Verify generated Space measurements are current
+      - name: Verify generated app measurements are current
         run: python scripts/build_space_measurements.py --check
 
-      - name: Verify Obstruction and Tower Space data is current
+      - name: Verify obstruction and tower app data is current
         run: python scripts/build_obstruction_tower_space.py --check
 
       - name: Verify the infographic matches the saved run
         run: python scripts/make_infographic.py --check
 
-      - name: Verify the Claude.ai holes Space files are current
+      - name: Verify obstruction app files are current
         run: python scripts/sync_claude_ai_holes.py --check
 
-      - name: Verify the Claude.ai holes infographic matches the catalogue
+      - name: Verify obstruction infographic matches the catalogue
         run: python scripts/make_claude_ai_holes_infographic.py --check
 
       - name: Validate experiment runner

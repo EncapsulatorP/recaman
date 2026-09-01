@@ -6,7 +6,7 @@ The GitHub Actions workflow in `.github/workflows/ci-cd.yml` runs:
 
 - Python 3.10, 3.11 and 3.12 test coverage;
 - source compilation and unit tests;
-- that the generated Space measurements and the infographic are both in step
+- that the generated app measurements and the infographic are both in step
   with `outputs/recaman_wheel_results.json` (`--check` modes below);
 - smoke tests for the experiment runner, density analysis, forward validation,
   and phase-space rendering;
@@ -34,13 +34,14 @@ deliberately distinct so they can coexist. Both depend on Gradio alone — the
 figures are SVG generated at request time, so there is no plotting stack and no
 image asset to keep in sync.
 
-The apps intentionally use different product language and experiments. The next-move
-Space ranks inferred process models on a future block. The obstruction Space measures
-lossless catalogue/process compression and verifies every custom codec by decoding it.
+The apps intentionally use different product language and experiments. The
+next-move app ranks inferred process models on a future block. The obstruction
+app measures lossless catalogue/process compression and verifies every custom
+codec by decoding it.
 
 ## Regenerating the derived files
 
-The Space data files in the tree are generated, and CI fails if any drifts:
+The app data files in the tree are generated, and CI fails if any drifts:
 
 ```bash
 python scripts/build_space_measurements.py            # apps/space/measurements.json
@@ -57,18 +58,18 @@ verify without writing, which is what CI does.
 
 ### Bumping the Gradio pin
 
-Each Space pins the version in two places, and CI asserts the pair agrees:
+Each app pins the version in two places, and CI asserts the pair agrees:
 
-1. `<space>/requirements.txt` — `gradio==5.50.0`
-2. `<space>/README.md` — `sdk_version: 5.50.0`
+1. `<app>/requirements.txt` — `gradio==5.50.0`
+2. `<app>/README.md` — `sdk_version: 5.50.0`
 
-Change both together, then run that Space's smoke job locally if you can.
+Change both together, then run that app's smoke job locally if you can.
 Moving across a major version (5 → 6) is a breaking change for the SDK and
 should be its own commit.
 
 ### Licensing
 
-The repository is MIT-licensed ([`LICENSE`](LICENSE)), and both Space cards
+The repository is MIT-licensed ([`LICENSE`](LICENSE)), and both app metadata blocks
 declare `license: mit` to match. If the root licence ever changes, change both
 cards' `license:` keys in the same commit.
 
