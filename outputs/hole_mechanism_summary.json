@@ -1,0 +1,44 @@
+{
+  "adjacent_control_visit_rate": 0.5555555555555556,
+  "adjacent_controls_total": 198,
+  "adjacent_controls_visited": 110,
+  "hole_mechanisms": {
+    "bypassed_addition_only": 23,
+    "no_observed_proposal": 80
+  },
+  "holes_with_bypassed_addition": 23,
+  "holes_with_no_observed_proposal": 80,
+  "interpretation_boundary": [
+    "The transition trace identifies finite-run missed-opportunity mechanisms, not permanent non-visitation.",
+    "Addition opportunities for target m are complete after step m; subtraction opportunities are right-censored at the run horizon.",
+    "Adjacent controls validate local contrast but do not create a randomized causal design.",
+    "No embedding is used as a substitute for recurrence state."
+  ],
+  "invariants": {
+    "addition_windows_complete": true,
+    "catalogue_holes_visited": 0,
+    "hole_chosen_additions": 0,
+    "hole_down_proposals": 0
+  },
+  "question": "How were the earliest catalogued holes missed by the exact recurrence?",
+  "scope": {
+    "catalogue_values": 103,
+    "first_catalogue_value": 852655,
+    "last_catalogue_value": 9585306,
+    "steps": 10000000,
+    "target_cap": 10000000,
+    "unique_adjacent_controls": 198
+  },
+  "source": {
+    "catalogue": "obstructions.txt",
+    "catalogue_sha256": "5cbf0ada7b909a937282a19281f8d9c4de3ce3cdbcc4f8f4677852e40fd6497e"
+  },
+  "total_hole_bypasses": 23,
+  "transition_causes": {
+    "boundary": 2878575,
+    "collision": 2121439,
+    "final_value": 20438710,
+    "free_down": 4999986,
+    "maximum_value": 61998984
+  }
+}

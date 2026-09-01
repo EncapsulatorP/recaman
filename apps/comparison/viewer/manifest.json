@@ -7,6 +7,10 @@
   "catalogue_sha256": "5cbf0ada7b909a937282a19281f8d9c4de3ce3cdbcc4f8f4677852e40fd6497e",
   "deep_frequency_result_source": "outputs/deep_obstruction_frequency_results.json",
   "deep_frequency_result_sha256": "12407288221f04efe194a225484997d530cb6589d91cd112585ac77bbd213f54",
+  "mechanism_trace_source": "outputs/hole_mechanism_trace.csv",
+  "mechanism_trace_sha256": "abdb215dce80aaaf2c52cb5debbf00b88e9293c69b9feca5a4d59741e627febc",
+  "mechanism_pairs_sha256": "d3dec7328cb34740d10f78f1d0f9940fec4a14847fe03e8a94ea3a335af2ed4d",
+  "mechanism_summary_sha256": "915fb343ac975b6b48fd4e7a9d02a672c3dabe1c1027653adf848315673ce3fc",
   "embedding_sha256": {
     "arc_lift.npz": "bc59999d42c2eec3f33b9030aae12add3f9a230552fcb9b1b55a65f9f94ea713",
     "delay_tau2.npz": "ca7a8e6b32646b2810214c7db608760d12999529c8be887354fb16a00e92d96b",
@@ -21,6 +25,9 @@
     "summary": "viewer/summary/summary.parquet",
     "obstruction_features": "viewer/obstructions/features.parquet",
     "frequency_bands": "viewer/obstructions/frequency_bands.parquet",
-    "deep_frequency_tests": "viewer/obstructions/deep_frequency_tests.parquet"
+    "deep_frequency_tests": "viewer/obstructions/deep_frequency_tests.parquet",
+    "mechanism_trace": "viewer/mechanisms/trace.parquet",
+    "mechanism_pairs": "viewer/mechanisms/pairs.parquet",
+    "mechanism_summary": "viewer/mechanisms/summary.parquet"
   }
 }

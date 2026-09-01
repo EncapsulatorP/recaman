@@ -18,6 +18,9 @@ EMBEDDING_DIR = APP_DIR / "source" / "embeddings"
 VIEWER_DIR = APP_DIR / "viewer"
 CATALOGUE = ROOT / "obstructions.txt"
 DEEP_FREQUENCY_RESULTS = ROOT / "outputs" / "deep_obstruction_frequency_results.json"
+MECHANISM_TRACE = ROOT / "outputs" / "hole_mechanism_trace.csv"
+MECHANISM_PAIRS = ROOT / "outputs" / "hole_mechanism_pairs.csv"
+MECHANISM_SUMMARY = ROOT / "outputs" / "hole_mechanism_summary.json"
 
 EXPECTED_SHA256 = {
     "arc_lift.npz": "bc59999d42c2eec3f33b9030aae12add3f9a230552fcb9b1b55a65f9f94ea713",
@@ -325,6 +328,12 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
     if deep_payload["source"]["sha256"] != sha256(CATALOGUE):
         raise ValueError("deep-frequency result was generated from a different catalogue")
     deep_frequency_tests = pd.DataFrame(deep_payload["tests"])
+    mechanism_payload = json.loads(MECHANISM_SUMMARY.read_text(encoding="utf-8"))
+    if mechanism_payload["source"]["catalogue_sha256"] != sha256(CATALOGUE):
+        raise ValueError("mechanism trace was generated from a different catalogue")
+    mechanism_trace = pd.read_csv(MECHANISM_TRACE)
+    mechanism_pairs = pd.read_csv(MECHANISM_PAIRS)
+    mechanism_summary = pd.json_normalize(mechanism_payload, sep=".")
 
     summary = pd.DataFrame(
         [
@@ -347,6 +356,9 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
                 "catalogue_feature_events_covered": len(obstruction_features),
                 "catalogue_feature_event_coverage": 1.0,
                 "deep_frequency_status": deep_payload["status"],
+                "mechanism_holes_traced": mechanism_payload["scope"]["catalogue_values"],
+                "mechanism_horizon_steps": mechanism_payload["scope"]["steps"],
+                "mechanism_addition_windows_complete": mechanism_payload["invariants"]["addition_windows_complete"],
                 "overall_status": (
                     "PASS" if fits["status"].eq("PASS").all() else "FAIL"
                 ),
@@ -362,6 +374,10 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
         "catalogue_sha256": sha256(CATALOGUE),
         "deep_frequency_result_source": "outputs/deep_obstruction_frequency_results.json",
         "deep_frequency_result_sha256": sha256(DEEP_FREQUENCY_RESULTS),
+        "mechanism_trace_source": "outputs/hole_mechanism_trace.csv",
+        "mechanism_trace_sha256": sha256(MECHANISM_TRACE),
+        "mechanism_pairs_sha256": sha256(MECHANISM_PAIRS),
+        "mechanism_summary_sha256": sha256(MECHANISM_SUMMARY),
         "embedding_sha256": hashes,
         "tables": {
             "sequence": "viewer/sequence/sequence.parquet",
@@ -371,6 +387,9 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
             "obstruction_features": "viewer/obstructions/features.parquet",
             "frequency_bands": "viewer/obstructions/frequency_bands.parquet",
             "deep_frequency_tests": "viewer/obstructions/deep_frequency_tests.parquet",
+            "mechanism_trace": "viewer/mechanisms/trace.parquet",
+            "mechanism_pairs": "viewer/mechanisms/pairs.parquet",
+            "mechanism_summary": "viewer/mechanisms/summary.parquet",
         },
     }
     return {
@@ -381,6 +400,9 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
         "obstruction_features": obstruction_features,
         "frequency_bands": frequency_bands,
         "deep_frequency_tests": deep_frequency_tests,
+        "mechanism_trace": mechanism_trace,
+        "mechanism_pairs": mechanism_pairs,
+        "mechanism_summary": mechanism_summary,
     }, manifest
 
 
@@ -397,6 +419,9 @@ def main() -> int:
         "obstruction_features": VIEWER_DIR / "obstructions" / "features.parquet",
         "frequency_bands": VIEWER_DIR / "obstructions" / "frequency_bands.parquet",
         "deep_frequency_tests": VIEWER_DIR / "obstructions" / "deep_frequency_tests.parquet",
+        "mechanism_trace": VIEWER_DIR / "mechanisms" / "trace.parquet",
+        "mechanism_pairs": VIEWER_DIR / "mechanisms" / "pairs.parquet",
+        "mechanism_summary": VIEWER_DIR / "mechanisms" / "summary.parquet",
     }
     manifest_path = VIEWER_DIR / "manifest.json"
     if args.check:

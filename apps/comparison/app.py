@@ -21,6 +21,9 @@ TABLE_PATHS = {
     "obstruction_features": VIEWER_DIR / "obstructions" / "features.parquet",
     "frequency_bands": VIEWER_DIR / "obstructions" / "frequency_bands.parquet",
     "deep_frequency_tests": VIEWER_DIR / "obstructions" / "deep_frequency_tests.parquet",
+    "mechanism_trace": VIEWER_DIR / "mechanisms" / "trace.parquet",
+    "mechanism_pairs": VIEWER_DIR / "mechanisms" / "pairs.parquet",
+    "mechanism_summary": VIEWER_DIR / "mechanisms" / "summary.parquet",
 }
 MANIFEST_PATH = VIEWER_DIR / "manifest.json"
 
@@ -48,6 +51,9 @@ SUMMARY = TABLES["summary"]
 OBSTRUCTION_FEATURES = TABLES["obstruction_features"]
 FREQUENCY_BANDS = TABLES["frequency_bands"]
 DEEP_FREQUENCY_TESTS = TABLES["deep_frequency_tests"]
+MECHANISM_TRACE = TABLES["mechanism_trace"]
+MECHANISM_PAIRS = TABLES["mechanism_pairs"]
+MECHANISM_SUMMARY = TABLES["mechanism_summary"]
 
 
 def validation_report() -> str:
@@ -99,6 +105,8 @@ finite horizon.
 | First Chaffin catalogue value | **{int(row.chaffin_min):,}** |
 | Last Chaffin catalogue value | **{int(row.chaffin_max):,}** |
 | Chaffin events inside embedding value span | **{int(row.chaffin_events_within_embedding_span):,}** |
+| Early holes traced through the exact recurrence | **{int(row.mechanism_holes_traced):,}** |
+| Mechanism-trace horizon | **{int(row.mechanism_horizon_steps):,} steps** |
 
 ### Honest conclusion
 
@@ -109,6 +117,77 @@ bundle validates the embeddings, but its `N={int(row.embedding_steps):,}`
 horizon cannot validate or falsify any Chaffin hole. No inferred-hole rows or
 synthetic predictions are used.
 """
+
+
+def mechanism_view() -> tuple[go.Figure, pd.DataFrame, pd.DataFrame, str]:
+    holes = MECHANISM_TRACE.loc[
+        MECHANISM_TRACE["group"] == "catalogue_hole"
+    ].copy()
+    counts = (
+        holes["mechanism"]
+        .value_counts()
+        .rename_axis("mechanism")
+        .reset_index(name="holes")
+    )
+    counts["mechanism"] = counts["mechanism"].map(
+        {
+            "no_observed_proposal": "Never proposed through 10M steps",
+            "bypassed_addition_only": "Addition candidate bypassed",
+        }
+    )
+    figure = px.bar(
+        counts,
+        x="mechanism",
+        y="holes",
+        color="mechanism",
+        color_discrete_map={
+            "Never proposed through 10M steps": "#475569",
+            "Addition candidate bypassed": "#b7791f",
+        },
+        text="holes",
+        title="Exact missed-opportunity mechanism for 103 early catalogue holes",
+        labels={"mechanism": "Observed transition history", "holes": "Catalogue values"},
+    )
+    figure.update_layout(showlegend=False, xaxis_title=None)
+
+    first = holes.loc[holes["value"] == 852_655].iloc[0]
+    upper_controls = MECHANISM_PAIRS.loc[MECHANISM_PAIRS["side"] == "upper"]
+    explanation = f"""
+## Mechanism-first result
+
+The recurrence was executed exactly for **10,000,000 steps**. For every one of
+the **103 catalogue values at or below 10,000,000**, the analysis recorded both
+possible landing proposals before the branch decision.
+
+- **{int((holes['mechanism'] == 'no_observed_proposal').sum())} holes** were
+  never proposed on either branch during the run.
+- **{int((holes['mechanism'] == 'bypassed_addition_only').sum())} holes**
+  appeared as the addition candidate exactly when a legal subtraction took
+  precedence.
+- No catalogue hole was a subtraction candidate: if a positive unseen value
+  had appeared there, the rule would have landed on it immediately.
+- The first known hole, **852,655**, had
+  **{int(first.up_proposals)} observed proposals** through the horizon.
+- All **{int(upper_controls['control_visited'].sum())}** upper adjacent controls
+  were already visited; this is a local contrast, not a randomized causal
+  estimate.
+
+### Boundary of the claim
+
+For a target `m`, addition opportunities are complete after step `m`; all 103
+targets meet that condition here. Subtraction opportunities can occur later,
+so their absence is right-censored at 10,000,000 steps. This trace explains the
+finite missed opportunities. It does **not** prove permanent holes.
+"""
+    columns = [
+        "value",
+        "mechanism",
+        "up_proposals",
+        "up_bypassed",
+        "down_proposals",
+        "first_bypass_step",
+    ]
+    return figure, holes[columns], MECHANISM_PAIRS, explanation
 
 
 def obstruction_feature_view() -> tuple[go.Figure, pd.DataFrame]:
@@ -276,6 +355,16 @@ means *not testable by this finite embedding*, not confirmed or rejected.
 with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
     gr.Markdown(overview())
 
+    with gr.Tab("Hole mechanisms"):
+        mechanism_explanation = gr.Markdown()
+        mechanism_plot = gr.Plot()
+        mechanism_table = gr.Dataframe(
+            interactive=False, label="Per-hole exact transition trace"
+        )
+        mechanism_pair_table = gr.Dataframe(
+            interactive=False, label="Adjacent-value controls"
+        )
+
     with gr.Tab("Sequence identity"):
         sequence_end = gr.Slider(
             minimum=100,
@@ -321,25 +410,6 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
             outputs=[hole_plot, hole_table, boundary_report],
         )
 
-    with gr.Tab("Obstruction structure"):
-        gr.Markdown(
-            "This feature map covers every catalogued obstruction event, including "
-            "the first known rare hole at **852,655**. It is separate from the short "
-            "Recamán trajectory embedding."
-        )
-        obstruction_plot = gr.Plot()
-        obstruction_table = gr.Dataframe(
-            interactive=False, label="Catalogue feature coordinates"
-        )
-        frequency_plot = gr.Plot()
-        frequency_table = gr.Dataframe(
-            interactive=False, label="Frequency decomposition by value band"
-        )
-        frequency_test_table = gr.Dataframe(
-            interactive=False, label="Log-scale trend tests by run-depth threshold"
-        )
-        frequency_explanation = gr.Markdown()
-
     with gr.Tab("Raw evidence"):
         gr.Markdown(
             "All downloadable files below are the exact tables used by the charts."
@@ -363,16 +433,12 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
         outputs=[hole_plot, hole_table, boundary_report],
     )
     demo.load(
-        obstruction_feature_view,
-        outputs=[obstruction_plot, obstruction_table],
-    )
-    demo.load(
-        frequency_view,
+        mechanism_view,
         outputs=[
-            frequency_plot,
-            frequency_table,
-            frequency_test_table,
-            frequency_explanation,
+            mechanism_plot,
+            mechanism_table,
+            mechanism_pair_table,
+            mechanism_explanation,
         ],
     )
 
