@@ -9,7 +9,7 @@ python_version: "3.11"
 app_file: app.py
 pinned: false
 license: mit
-short_description: Validate Recamán embeddings against exact evidence
+short_description: Trace how early Recamán holes were actually missed
 ---
 
 # Recamán Independent Check Visualizer
@@ -29,15 +29,21 @@ Chaffin's checked-in obstruction catalogue.
   fresh reconstruction from the regenerated sequence.
 - All 3,103 Chaffin catalogue intervals against the embedding's actual
   finite value span.
-- An interpretable catalogue-feature embedding of every obstruction event,
-  including `852,655`, using value scale, preceding gap, and run length.
-- A value-band decomposition that separates event-start frequency from the
-  growth caused by multi-value obstruction runs.
+- Every proposal involving the 103 catalogue values at or below 10,000,000
+  during an exact ten-million-step recurrence.
+- Adjacent non-catalogue controls and the exact branch outcome: chosen
+  subtraction, forced addition, or bypassed addition candidate.
 
 The embedding covers steps `0…2800` and values `0…10,163`. Chaffin's
 catalogue begins at `852,655`, so none of its events lies inside this
 embedding's value span. The Space displays that boundary explicitly: it does
 not turn non-overlap into a hole prediction.
+
+The mechanism trace finds that 23 early holes were addition candidates when a
+legal subtraction took precedence, while 80 were never proposed through the
+finite horizon. Addition opportunities for a value `m` are complete after
+step `m`; subtraction opportunities remain right-censored, so this does not
+prove permanent absence.
 
 ## Generated tables
 
@@ -50,6 +56,9 @@ not turn non-overlap into a hole prediction.
 | `viewer/obstructions/features.parquet` | 3,103 | Interpretable coordinates for every catalogue event |
 | `viewer/obstructions/frequency_bands.parquet` | 5 | Normalised event and missing-value rates by value scale |
 | `viewer/obstructions/deep_frequency_tests.parquet` | 5 | Corrected log-scale trend tests by run-depth threshold |
+| `viewer/mechanisms/trace.parquet` | 301 | Exact proposal histories for 103 holes and 198 adjacent controls |
+| `viewer/mechanisms/pairs.parquet` | 198 | Hole-to-adjacent-control comparisons |
+| `viewer/mechanisms/summary.parquet` | 1 | Scope, invariants, causes, and interpretation boundary |
 
 The sequence embedding remains a finite pipeline diagnostic; it is not used as
 evidence that the Chaffin holes are predicted. The obstruction feature map has
@@ -66,6 +75,7 @@ From the repository root:
 ```bash
 python scripts/build_comparison_tables.py
 python scripts/build_comparison_tables.py --check
+python scripts/analyze_hole_mechanisms.py --check
 ```
 
 CI runs the check mode and the Space tests. Any source-hash mismatch, sequence

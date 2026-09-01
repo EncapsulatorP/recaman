@@ -42,7 +42,7 @@ The repository includes three locally runnable Gradio tools:
 
 - [Recamán Obstruction Compression Lab](apps/claude_ai_holes/README.md) — lossless range/delta codecs, phase-slip encoding and exact round-trip checks.
 - [Recamán Next-Move Model Lab](apps/space/README.md) — inferred agents, chronological holdouts, tower/modular ablations and predictive code length.
-- [Recamán Independent Check Visualizer](apps/comparison/README.md) — exact NPZ-versus-recurrence checks, Chaffin horizon coverage, downloadable Parquet tables, and source-hash validation.
+- [Recamán Independent Check Visualizer](apps/comparison/README.md) — exact NPZ checks plus a ten-million-step, per-value trace of how early holes were missed by the recurrence.
 
 They are not advertised as public hosted demos. See [Demos and CI](wiki/Demos-and-Deployment.md)
 for local launch commands and automated checks.
@@ -56,6 +56,11 @@ for local launch commands and automated checks.
   obstruction runs become more frequent at every tested threshold (Holm-adjusted
   permutation `p ≤ 0.00060`); this supports the pattern, not its proposed
   visited-set-saturation mechanism.
+- A mechanism-first trace covers all **103 catalogue values at or below
+  10,000,000**. Of these, **23** appeared as an addition candidate but were
+  bypassed by a legal subtraction; **80** were never proposed on either branch
+  through ten million steps. This is finite transition evidence, not a
+  permanence proof.
 - The strongest leakage-reduced value-side result is dataset `D` with mean AUC
   **0.7588** under forward-chaining validation. It shows statistical
   separation, not a per-integer test.

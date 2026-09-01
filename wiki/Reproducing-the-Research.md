@@ -51,6 +51,19 @@ This deterministic test uses 24 equal-width `log10(value)` bins, five fixed
 contiguous-run thresholds, 10,000 one-sided permutations, and Holm correction.
 It writes CSV, JSON, and Markdown artifacts under `outputs/`.
 
+### Exact transition mechanisms for early holes
+
+```bash
+python scripts/analyze_hole_mechanisms.py
+python scripts/analyze_hole_mechanisms.py --check
+```
+
+This runs the exact recurrence for ten million steps, traces both branch
+candidates for the 103 catalogue values at or below ten million, and compares
+them with adjacent non-catalogue values. The resulting addition histories are
+complete for those targets; subtraction histories are explicitly
+right-censored at the run horizon.
+
 ### Value-side Version C
 
 Run only the harder gap-dynamics dataset:

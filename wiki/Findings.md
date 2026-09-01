@@ -45,6 +45,26 @@ saturation mechanism: the catalogue has neither survivor time nor the number
 of landing opportunities. See the [saved report](../outputs/deep_obstruction_frequency_report.md)
 and [reproduction script](../scripts/test_deep_obstruction_frequency.py).
 
+### Exact missed-opportunity mechanisms through ten million steps
+
+The mechanism trace follows every proposal involving the 103 catalogue values
+at or below 10,000,000 and 198 adjacent non-catalogue controls:
+
+| Finite-run outcome | Catalogue values |
+| --- | ---: |
+| Addition candidate bypassed because subtraction was legal | 23 |
+| No proposal observed on either branch | 80 |
+| Chosen as a subtraction or addition | 0 |
+
+The first known hole, `852,655`, was never proposed through the horizon. No
+catalogue hole appeared as a subtraction candidate: a positive unseen
+subtraction candidate is necessarily chosen by the recurrence. Addition
+opportunities for each target are complete because the run extends beyond its
+value, but future subtraction opportunities remain right-censored. This is an
+exact explanation of finite missed opportunities, not proof of permanence.
+See the [mechanism report](../outputs/hole_mechanism_report.md) and
+[reproduction script](../scripts/analyze_hole_mechanisms.py).
+
 ### Predictive measurements
 
 | Experiment | Evaluation | Result | Interpretation |

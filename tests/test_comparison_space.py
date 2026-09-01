@@ -28,6 +28,9 @@ def test_real_comparison_tables_are_loaded() -> None:
     assert len(comparison.OBSTRUCTION_FEATURES) == 3_103
     assert len(comparison.FREQUENCY_BANDS) == 5
     assert len(comparison.DEEP_FREQUENCY_TESTS) == 5
+    assert len(comparison.MECHANISM_TRACE) == 301
+    assert len(comparison.MECHANISM_PAIRS) == 198
+    assert len(comparison.MECHANISM_SUMMARY) == 1
     assert len(comparison.CHECKS) == 6
     assert len(comparison.SUMMARY) == 1
 
@@ -85,6 +88,18 @@ def test_obstruction_embedding_covers_catalogue_and_decomposes_frequency() -> No
     assert (bands["missing_values"] >= bands["event_starts"]).all()
     assert tests["supports_increase"].all()
     assert "per equal multiplicative" in explanation
+
+
+def test_mechanism_view_exposes_transition_causes_and_censoring() -> None:
+    figure, holes, pairs, explanation = comparison.mechanism_view()
+    assert figure.data
+    assert len(holes) == 103
+    assert len(pairs) == 198
+    assert (holes["mechanism"] == "bypassed_addition_only").sum() == 23
+    assert holes["down_proposals"].sum() == 0
+    assert "852,655" in explanation
+    assert "right-censored" in explanation
+    assert "does **not** prove permanent holes" in explanation
 
 
 def test_validation_report_contains_source_hashes() -> None:

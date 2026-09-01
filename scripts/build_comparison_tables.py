@@ -334,6 +334,12 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
     mechanism_trace = pd.read_csv(MECHANISM_TRACE)
     mechanism_pairs = pd.read_csv(MECHANISM_PAIRS)
     mechanism_summary = pd.json_normalize(mechanism_payload, sep=".")
+    for column in mechanism_summary.columns:
+        mechanism_summary[column] = mechanism_summary[column].map(
+            lambda value: json.dumps(value, sort_keys=True)
+            if isinstance(value, (list, dict))
+            else value
+        )
 
     summary = pd.DataFrame(
         [
