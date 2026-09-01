@@ -24,7 +24,10 @@ def test_catalogue_profile_and_primary_result() -> None:
     assert len(bins) == 24
     assert result["status"] == "CATALOGUE_PROXY_SUPPORTED"
     assert all(row["spearman_rho"] > 0 for row in result["tests"])
-    assert all(row["late_half_events"] > row["early_half_events"] for row in result["tests"])
+    assert all(
+        row["late_half_events"] > row["early_half_events"]
+        for row in result["tests"]
+    )
 
 
 def test_checked_in_frequency_outputs_are_current() -> None:
