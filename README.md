@@ -38,10 +38,11 @@ which values are permanently absent.
 
 ## Interactive applications
 
-The repository includes two locally runnable Gradio tools:
+The repository includes three locally runnable Gradio tools:
 
 - [Recamán Obstruction Compression Lab](apps/claude_ai_holes/README.md) — lossless range/delta codecs, phase-slip encoding and exact round-trip checks.
 - [Recamán Next-Move Model Lab](apps/space/README.md) — inferred agents, chronological holdouts, tower/modular ablations and predictive code length.
+- [Recamán Independent Check Visualizer](apps/comparison/README.md) — real-versus-inferred sequence and hole views, downloadable filtered tables, and an explicit dataset-contract audit.
 
 They are not advertised as public hosted demos. See [Demos and CI](wiki/Demos-and-Deployment.md)
 for local launch commands and automated checks.
@@ -110,7 +111,7 @@ results and generated assets are listed in
 | [`obstructions.txt`](obstructions.txt) | Catalogued value-side holes and ranges |
 | [`scripts/`](scripts/) | Generators, feature searches, validators, and plots |
 | [`outputs/`](outputs/) | Saved measurements and generated figures |
-| [`apps/`](apps/) | Two separate Gradio explorers |
+| [`apps/`](apps/) | Three separate Gradio explorers |
 | [`supporting_docs/`](supporting_docs/) | Extended mathematical notes and papers |
 | [`wiki/`](wiki/) | Navigable research documentation |
 | [`tests/`](tests/) | Unit, provenance, and smoke checks |

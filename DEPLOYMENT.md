@@ -11,28 +11,29 @@ The GitHub Actions workflow in `.github/workflows/ci-cd.yml` runs:
 - smoke tests for the experiment runner, density analysis, forward validation,
   and phase-space rendering;
 - separate jobs that install the pinned Gradio versions, verify the pins match
-  the app metadata, import both applications, and exercise their public functions.
+  the app metadata, import all three applications, and exercise their public functions.
 
 The workflow intentionally stops after verification. It does not publish to an
 external hosting service or depend on repository deployment secrets.
 
-## The two applications
+## The three applications
 
-The repository ships two independent Gradio apps, because it studies two
-different things and they must not be confused:
+The repository ships three independent Gradio apps. Two explore distinct
+research objects; the third compares published reference and inferred evidence:
 
 | directory | product |
 | --- | --- |
 | `apps/space/` | forward-held-out next-move model arena |
 | `apps/claude_ai_holes/` | lossless obstruction compression lab |
+| `apps/comparison/` | independent sequence/hole comparison and dataset-contract audit |
 
 Each application is self-contained and runs with its directory as the import
 root, so its modules are top-level there (`import predictor`, not
 `import apps.space.predictor`).
-`tests/conftest.py` puts both directories on `sys.path`; their module names are
-deliberately distinct so they can coexist. Both depend on Gradio alone — the
-figures are SVG generated at request time, so there is no plotting stack and no
-image asset to keep in sync.
+`tests/conftest.py` puts the two original directories on `sys.path`; their
+module names are deliberately distinct so they can coexist. The comparison app
+is imported in isolation and pins its own pandas, PyArrow, Plotly, Gradio, and
+Hugging Face Hub dependencies.
 
 The apps intentionally use different product language and experiments. The
 next-move app ranks inferred process models on a future block. The obstruction
@@ -58,7 +59,8 @@ verify without writing, which is what CI does.
 
 ### Bumping the Gradio pin
 
-Each app pins the version in two places, and CI asserts the pair agrees:
+Each app pins the Gradio version in two places, and CI asserts each pair agrees.
+The original apps use `5.50.0`; the comparison app uses `6.26.0`:
 
 1. `<app>/requirements.txt` — `gradio==5.50.0`
 2. `<app>/README.md` — `sdk_version: 5.50.0`
@@ -88,3 +90,13 @@ python apps/space/app.py
 ```
 
 Gradio prints the local address after startup.
+
+Run the comparison app in its own environment:
+
+```bash
+python -m pip install -r apps/comparison/requirements.txt
+python apps/comparison/app.py
+```
+
+It reads `kugguk/recaman-independent-check-bundle` by default. The Overview tab
+reports `PASS`, `PARTIAL`, `WAITING`, or `FAIL` for the published table contract.

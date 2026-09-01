@@ -44,7 +44,7 @@ jobs:
       - name: Compile Python sources
         run: >-
           python -m compileall -q
-          run_all.py scripts apps/space apps/claude_ai_holes tests
+          run_all.py scripts apps/space apps/claude_ai_holes apps/comparison tests
 
       - name: Run unit tests
         run: python -m pytest -q
@@ -183,3 +183,37 @@ jobs:
           assert catalogue_svg.startswith('<svg') and process_svg.startswith('<svg');
           assert compression['catalogue']['event_round_trip'] and compression_report;
           assert '1,277,399' in app.overview()"
+
+  comparison-space-smoke:
+    name: Independent comparison app smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: apps/comparison/requirements.txt
+
+      - name: Install app dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r apps/comparison/requirements.txt pytest
+
+      - name: Check the pinned SDK matches the app metadata
+        run: >-
+          python -c
+          "import pathlib, re, gradio;
+          card = pathlib.Path('apps/comparison/README.md').read_text(encoding='utf-8');
+          pinned = re.search(r'^sdk_version:\s*(\S+)$', card, re.M).group(1);
+          assert pinned == gradio.__version__, f'README pins {pinned}, installed {gradio.__version__}'"
+
+      - name: Validate the comparison contract and calculations
+        env:
+          MPLCONFIGDIR: ${{ runner.temp }}/matplotlib
+        run: python -m pytest -q tests/test_comparison_space.py tests/test_space_cards.py
