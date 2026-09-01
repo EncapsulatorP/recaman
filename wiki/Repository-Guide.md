@@ -74,7 +74,7 @@ The most important saved files are indexed in
 | [`apps/claude_ai_holes/`](https://github.com/EncapsulatorP/recaman/tree/main/apps/claude_ai_holes) | Explore catalogue structure and value-model scores | Does not provide per-number certification |
 | [`apps/space/`](https://github.com/EncapsulatorP/recaman/tree/main/apps/space) | Explore and predict the next process bit | Says nothing about permanent holes |
 
-See [Demos and deployment](Demos-and-Deployment.md) for local launch and CD.
+See [Demos and CI](Demos-and-Deployment.md) for local launch and automated checks.
 
 ## Extended documents
 
@@ -83,7 +83,7 @@ See [Demos and deployment](Demos-and-Deployment.md) for local launch and CD.
 - PDF, TeX, and Word variants live in
   [`supporting_docs/`](https://github.com/EncapsulatorP/recaman/tree/main/supporting_docs).
 - [`DEPLOYMENT.md`](https://github.com/EncapsulatorP/recaman/blob/main/DEPLOYMENT.md)
-  documents CI and Hugging Face deployment.
+  documents CI and local application checks.
 
 The long note contains exploratory and historical claims. For the current
 evidence hierarchy, use [Findings](Findings.md).

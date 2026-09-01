@@ -36,10 +36,15 @@ patterns survive honest validation.
 A blocked step is not a missing integer. Predicting `b(n)` does not identify
 which values are permanently absent.
 
-## Live experiments
+## Interactive applications
 
-- [Recamán Obstruction Compression Lab](https://huggingface.co/spaces/kugguk/recaman-obstruction-lab) — lossless range/delta codecs, phase-slip encoding and exact round-trip checks.
-- [Recamán Next-Move Model Lab](https://huggingface.co/spaces/kugguk/recaman-next-move) — inferred agents, chronological holdouts, tower/modular ablations and predictive code length.
+The repository includes two locally runnable Gradio tools:
+
+- [Recamán Obstruction Compression Lab](apps/claude_ai_holes/README.md) — lossless range/delta codecs, phase-slip encoding and exact round-trip checks.
+- [Recamán Next-Move Model Lab](apps/space/README.md) — inferred agents, chronological holdouts, tower/modular ablations and predictive code length.
+
+They are not advertised as public hosted demos. See [Demos and CI](wiki/Demos-and-Deployment.md)
+for local launch commands and automated checks.
 
 ## Current picture
 
@@ -68,7 +73,7 @@ See [Findings](wiki/Findings.md) for the measurements and their limits.
 | Reproduce an experiment | [Reproducing the research](wiki/Reproducing-the-Research.md) |
 | Find a script or output | [Repository guide](wiki/Repository-Guide.md) |
 | See what remains unresolved | [Open questions](wiki/Open-Questions.md) |
-| Run or deploy the interactive apps | [Demos and deployment](wiki/Demos-and-Deployment.md) |
+| Run the interactive apps | [Demos and CI](wiki/Demos-and-Deployment.md) |
 
 The full entry point is the [research wiki](wiki/Home.md).
 
@@ -113,7 +118,7 @@ results and generated assets are listed in
 ## Further reading
 
 - [Extended mathematical note](supporting_docs/recaman_final_math.md)
-- [CI and deployment](DEPLOYMENT.md)
+- [CI and local apps](DEPLOYMENT.md)
 - [MIT License](LICENSE)
 
 <img src="assets/online-presence.svg" alt="Online presence" width="160">

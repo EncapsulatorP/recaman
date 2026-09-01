@@ -1,4 +1,4 @@
-name: CI and Hugging Face CD
+name: CI
 
 "on":
   push:
@@ -93,7 +93,7 @@ jobs:
           --save "${RUNNER_TEMP}/phase-space-smoke.png"
 
   space-smoke:
-    name: Hugging Face Space smoke test
+    name: Next-move app smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -108,12 +108,12 @@ jobs:
           cache: pip
           cache-dependency-path: apps/space/requirements.txt
 
-      - name: Install Space dependencies
+      - name: Install app dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r apps/space/requirements.txt
 
-      - name: Check the pinned SDK matches the Space card
+      - name: Check the pinned SDK matches the app metadata
         run: >-
           python -c
           "import pathlib, re, gradio;
@@ -121,7 +121,7 @@ jobs:
           pinned = re.search(r'^sdk_version:\s*(\S+)$', card, re.M).group(1);
           assert pinned == gradio.__version__, f'README pins {pinned}, installed {gradio.__version__}'"
 
-      - name: Import the Space application and exercise its endpoints
+      - name: Import the application and exercise its endpoints
         run: >-
           python -c
           "import sys; sys.path.insert(0, 'apps/space'); import app;
@@ -143,7 +143,7 @@ jobs:
           assert rank_svg.startswith('<svg') and rank['real_rank'] == 221 and rank_report"
 
   claude-ai-holes-smoke:
-    name: Obstruction Compression Space smoke test
+    name: Obstruction compression app smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -158,12 +158,12 @@ jobs:
           cache: pip
           cache-dependency-path: apps/claude_ai_holes/requirements.txt
 
-      - name: Install Space dependencies
+      - name: Install app dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r apps/claude_ai_holes/requirements.txt
 
-      - name: Check the pinned SDK matches the Space card
+      - name: Check the pinned SDK matches the app metadata
         run: >-
           python -c
           "import pathlib, re, gradio;
@@ -171,7 +171,7 @@ jobs:
           pinned = re.search(r'^sdk_version:\s*(\S+)$', card, re.M).group(1);
           assert pinned == gradio.__version__, f'README pins {pinned}, installed {gradio.__version__}'"
 
-      - name: Import the Space application and exercise it
+      - name: Import the application and exercise it
         run: >-
           python -c
           "import sys; sys.path.insert(0, 'apps/claude_ai_holes'); import app;
@@ -183,53 +183,3 @@ jobs:
           assert catalogue_svg.startswith('<svg') and process_svg.startswith('<svg');
           assert compression['catalogue']['event_round_trip'] and compression_report;
           assert '1,277,399' in app.overview()"
-
-  deploy-space:
-    name: Deploy Hugging Face Space
-    needs: [python-ci, space-smoke]
-    if: >-
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
-      vars.HF_SPACE_REPO_ID != ''
-    runs-on: ubuntu-latest
-    environment: huggingface-space
-    timeout-minutes: 10
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
-
-      - name: Sync Space application
-        uses: huggingface/hub-sync@v0.1.0
-        with:
-          github_repo_id: ${{ github.repository }}
-          huggingface_repo_id: ${{ vars.HF_SPACE_REPO_ID }}
-          hf_token: ${{ secrets.HF_RECAMAN }}
-          repo_type: space
-          space_sdk: gradio
-          subdirectory: apps/space
-
-  deploy-claude-ai-holes:
-    name: Deploy Obstruction Compression Space
-    needs: [python-ci, claude-ai-holes-smoke]
-    if: >-
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
-      vars.HF_HOLES_SPACE_REPO_ID != ''
-    runs-on: ubuntu-latest
-    environment: huggingface-space
-    timeout-minutes: 10
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v6
-
-      - name: Sync Space application
-        uses: huggingface/hub-sync@v0.1.0
-        with:
-          github_repo_id: ${{ github.repository }}
-          huggingface_repo_id: ${{ vars.HF_HOLES_SPACE_REPO_ID }}
-          hf_token: ${{ secrets.HF_HOLES_TOKEN }}
-          repo_type: space
-          space_sdk: gradio
-          subdirectory: apps/claude_ai_holes

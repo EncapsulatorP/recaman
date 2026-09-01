@@ -39,7 +39,6 @@ from tower_lab import (
 MEASUREMENTS = load_measurements()
 DEFAULT_CHOICE = next(iter(MOVE_CHOICES))
 REPO_URL = "https://github.com/EncapsulatorP/recaman"
-SPACE_URL = "https://huggingface.co/spaces/kugguk/recaman-next-move"
 MAX_RAW_STEPS = 5_000
 
 
@@ -479,7 +478,7 @@ with gr.Blocks(
         with gr.Tab("Method & limits"):
             gr.Markdown(METHOD)
 
-    gr.Markdown(f"[Research repository]({REPO_URL}) · [Hugging Face Space]({SPACE_URL})")
+    gr.Markdown(f"[Research repository]({REPO_URL})")
 
     demo.load(
         inspect_model_arena,

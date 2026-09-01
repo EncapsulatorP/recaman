@@ -96,4 +96,4 @@ test scaling laws with uncertainty intervals and out-of-sample checkpoints.
 ---
 
 [← Repository guide](Repository-Guide.md) ·
-[Next: Demos and deployment →](Demos-and-Deployment.md)
+[Next: Demos and CI →](Demos-and-Deployment.md)

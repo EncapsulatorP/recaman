@@ -34,7 +34,7 @@ measurements, and explicit limits on every claim.
 | Set up the environment and rerun work | [Reproducing the research](Reproducing-the-Research.md) |
 | Locate code, apps, outputs, and papers | [Repository guide](Repository-Guide.md) |
 | Explore the unresolved research programme | [Open questions](Open-Questions.md) |
-| Use or deploy the Gradio interfaces | [Demos and deployment](Demos-and-Deployment.md) |
+| Run the Gradio interfaces | [Demos and CI](Demos-and-Deployment.md) |
 
 ## Evidence in one minute
 
