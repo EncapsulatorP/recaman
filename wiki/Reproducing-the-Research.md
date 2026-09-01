@@ -51,6 +51,17 @@ This deterministic test uses 24 equal-width `log10(value)` bins, five fixed
 contiguous-run thresholds, 10,000 one-sided permutations, and Holm correction.
 It writes CSV, JSON, and Markdown artifacts under `outputs/`.
 
+### Obstruction anatomy beyond frequency
+
+```bash
+python scripts/analyze_obstruction_anatomy.py
+python scripts/analyze_obstruction_anatomy.py --check
+```
+
+This produces event-level severity/isolation data, equal-log scale profiles,
+six corrected arithmetic tests, and a 1,000-replicate magnitude-matched
+clustering null.
+
 ### Value-side Version C
 
 Run only the harder gap-dynamics dataset:
@@ -115,6 +126,7 @@ python scripts/make_infographic.py --check
 python scripts/sync_claude_ai_holes.py --check
 python scripts/make_claude_ai_holes_infographic.py --check
 python scripts/test_deep_obstruction_frequency.py --check
+python scripts/analyze_obstruction_anatomy.py --check
 ```
 
 Remove `--check` only when intentionally regenerating those files.

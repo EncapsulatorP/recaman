@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "status": "READY_WITH_CAVEATS",
+  "source": {
+    "path": "obstructions.txt",
+    "sha256": "5cbf0ada7b909a937282a19281f8d9c4de3ce3cdbcc4f8f4677852e40fd6497e",
+    "upstream": "https://benchaffin.com/recaman/rec-holes-2_32.txt",
+    "events": 3103,
+    "missing_values": 1277400
+  },
+  "severity": {
+    "gini_run_length": 0.9848619408552288,
+    "top_one_percent_event_count": 32,
+    "top_one_percent_missing_share": 0.7756920306873336,
+    "median_run_length": 1.0,
+    "p95_run_length": 212.59999999998035,
+    "p99_run_length": 8138.300000000001,
+    "maximum_run_length": 368058
+  },
+  "isolation": {
+    "metric": "Spearman(log10 run length, log10 nearest event gap + 1)",
+    "rho": -0.24271971965722286,
+    "two_sided_p": 7.619120091298992e-43,
+    "event_count": 3103
+  },
+  "clustering": {
+    "metric": "median nearest-neighbour distance in log10(value)",
+    "observed": 1.0853935172860929e-05,
+    "matched_null_median": 0.00021110338460328393,
+    "observed_to_null": 0.05141525889439522,
+    "empirical_one_sided_p": 0.000999000999000999,
+    "null_replicates": 1000,
+    "matching": "same event count in each of 24 log10(value) bins",
+    "seed": 852655
+  },
+  "arithmetic": {
+    "primes_tested": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13
+    ],
+    "multiple_testing": "Holm family-wise correction",
+    "significant_after_correction": 0
+  },
+  "limitations": [
+    "Catalogue membership is conditioned on the 10^612-term computation horizon.",
+    "Run length is severity on the value axis, not survivor time.",
+    "The clustering null matches magnitude but not unknown Recaman landing opportunities.",
+    "Arithmetic tests are a small predeclared screen, not a search over formulas.",
+    "Associations do not establish the visited-set-saturation mechanism."
+  ]
+}

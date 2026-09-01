@@ -28,6 +28,10 @@ def test_real_comparison_tables_are_loaded() -> None:
     assert len(comparison.OBSTRUCTION_FEATURES) == 3_103
     assert len(comparison.FREQUENCY_BANDS) == 5
     assert len(comparison.DEEP_FREQUENCY_TESTS) == 5
+    assert len(comparison.ANATOMY_EVENTS) == 3_103
+    assert len(comparison.ANATOMY_SCALES) == 3
+    assert len(comparison.ANATOMY_ARITHMETIC) == 6
+    assert len(comparison.ANATOMY_SUMMARY) == 1
     assert len(comparison.CHECKS) == 6
     assert len(comparison.SUMMARY) == 1
 
@@ -93,3 +97,25 @@ def test_validation_report_contains_source_hashes() -> None:
     assert "2,801/2,801 exact" in report
     for digest in comparison.MANIFEST["embedding_sha256"].values():
         assert digest in report
+
+
+def test_obstruction_anatomy_views_match_saved_evidence() -> None:
+    overview = comparison.anatomy_overview()
+    assert "77.6%" in overview
+    assert "0 of 6" in overview
+
+    severity_figure, severe = comparison.severity_concentration_view()
+    assert len(severity_figure.data) == 2
+    assert len(severe) == 20
+    assert severe.iloc[0]["length"] == 368_058
+
+    isolation_figure, isolated = comparison.isolation_view()
+    assert isolation_figure.data
+    assert len(isolated) == 100
+
+    scale_figure, scales, arithmetic_figure, arithmetic = (
+        comparison.scale_and_arithmetic_view()
+    )
+    assert scale_figure.data and arithmetic_figure.data
+    assert scales["event_count"].sum() == 3_103
+    assert not arithmetic["survives_holm_005"].any()
