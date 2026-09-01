@@ -182,7 +182,7 @@ jobs:
           python -c
           "import sys; sys.path.insert(0, 'apps/claude_ai_holes'); import app;
           assert app.demo is not None;
-          assert app.CATALOGUE.event_count == 3102;
+          assert app.CATALOGUE.event_count == 3103;
           strip, report = app.explore('full span', 0);
           assert strip.startswith('<svg') and '1,277,400' in report;
           catalogue_svg, process_svg, compression_report, compression = app.compression_experiment(20000);
