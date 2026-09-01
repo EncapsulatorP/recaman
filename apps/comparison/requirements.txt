@@ -1,0 +1,5 @@
+gradio==6.26.0
+huggingface_hub==1.29.0
+pandas>=2.2,<4
+pyarrow>=18,<24
+plotly>=6,<7
