@@ -6,7 +6,13 @@ import importlib.util
 import sys
 from pathlib import Path
 
-import pandas as pd
+import pytest
+
+
+pd = pytest.importorskip("pandas")
+pytest.importorskip("plotly")
+pytest.importorskip("gradio")
+pytest.importorskip("huggingface_hub")
 
 
 APP_PATH = Path(__file__).resolve().parents[1] / "apps" / "comparison" / "app.py"

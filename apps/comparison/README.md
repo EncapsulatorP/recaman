@@ -14,9 +14,10 @@ short_description: Compare Recamán reference and inferred evidence
 
 # Recamán Independent Check Visualizer
 
-Interactive companion to:
+Interactive companion maintained under the
+[`kugguk`](https://huggingface.co/kugguk) Hugging Face account for:
 
-`kugguk/recaman-independent-check-bundle`
+[`kugguk/recaman-independent-check-bundle`](https://huggingface.co/datasets/kugguk/recaman-independent-check-bundle)
 
 The Space compares:
 
