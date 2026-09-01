@@ -20,6 +20,7 @@ TABLE_PATHS = {
     "summary": VIEWER_DIR / "summary" / "summary.parquet",
     "obstruction_features": VIEWER_DIR / "obstructions" / "features.parquet",
     "frequency_bands": VIEWER_DIR / "obstructions" / "frequency_bands.parquet",
+    "deep_frequency_tests": VIEWER_DIR / "obstructions" / "deep_frequency_tests.parquet",
 }
 MANIFEST_PATH = VIEWER_DIR / "manifest.json"
 
@@ -46,6 +47,7 @@ CHECKS = TABLES["fits"]
 SUMMARY = TABLES["summary"]
 OBSTRUCTION_FEATURES = TABLES["obstruction_features"]
 FREQUENCY_BANDS = TABLES["frequency_bands"]
+DEEP_FREQUENCY_TESTS = TABLES["deep_frequency_tests"]
 
 
 def validation_report() -> str:
@@ -129,7 +131,7 @@ def obstruction_feature_view() -> tuple[go.Figure, pd.DataFrame]:
     return figure, OBSTRUCTION_FEATURES
 
 
-def frequency_view() -> tuple[go.Figure, pd.DataFrame, str]:
+def frequency_view() -> tuple[go.Figure, pd.DataFrame, pd.DataFrame, str]:
     plot_data = FREQUENCY_BANDS.melt(
         id_vars="band",
         value_vars=["events_per_million", "missing_values_per_million"],
@@ -162,11 +164,15 @@ def frequency_view() -> tuple[go.Figure, pd.DataFrame, str]:
     explanation = f"""
 ### What changes after 852,655?
 
-The catalogue does **not** show a simple rise in independent obstruction-event
-frequency. After normalising by each band's candidate-value width, event starts
-become less frequent at larger scales. What rises in some later bands is the
-number of **missing integers**, because events increasingly include contiguous
-runs instead of isolated values.
+Both observations below are true because they use different denominators:
+
+- per fixed million candidate integers, event starts become less dense;
+- per equal multiplicative (`log10`) value interval, events become more
+  frequent—including events at every predeclared run-depth threshold.
+
+The 24-bin permutation test supports the multiplicative-scale increase after
+Holm correction at run lengths ≥1, ≥2, ≥10, ≥100, and ≥1,000. Later events also
+increasingly include contiguous runs instead of isolated values.
 
 In the final displayed band, **{float(last.extension_share_of_missing):.1%}** of
 catalogued missing values are run-extension values beyond the event starts.
@@ -177,7 +183,7 @@ independent event-arrival rate simply increases.
 These are descriptive catalogue statistics after `10^612` computed terms. They
 do not establish causation or prove that a catalogued hole is absent forever.
 """
-    return figure, FREQUENCY_BANDS, explanation
+    return figure, FREQUENCY_BANDS, DEEP_FREQUENCY_TESTS, explanation
 
 
 def sequence_view(n_end: int) -> tuple[go.Figure, pd.DataFrame]:
@@ -329,6 +335,9 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
         frequency_table = gr.Dataframe(
             interactive=False, label="Frequency decomposition by value band"
         )
+        frequency_test_table = gr.Dataframe(
+            interactive=False, label="Log-scale trend tests by run-depth threshold"
+        )
         frequency_explanation = gr.Markdown()
 
     with gr.Tab("Raw evidence"):
@@ -359,7 +368,12 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
     )
     demo.load(
         frequency_view,
-        outputs=[frequency_plot, frequency_table, frequency_explanation],
+        outputs=[
+            frequency_plot,
+            frequency_table,
+            frequency_test_table,
+            frequency_explanation,
+        ],
     )
 
 

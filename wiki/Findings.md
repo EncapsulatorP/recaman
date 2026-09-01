@@ -15,7 +15,7 @@ Structural totals derived from [`obstructions.txt`](https://github.com/Encapsula
 | --- | ---: |
 | Expanded catalogue values | 1,277,400 |
 | Encoded events | 3,103 |
-| Singleton events | 2,535 |
+| Singleton events | 2,536 |
 | Range events | 567 |
 | Smallest event start | 852,655 |
 | Largest event start | 4,293,242,951 |
@@ -24,6 +24,26 @@ Structural totals derived from [`obstructions.txt`](https://github.com/Encapsula
 
 These totals describe the file exactly. Whether each value remains unvisited
 for all future time is a separate question.
+
+### Deep-event frequency after 852,655
+
+A predeclared catalogue-level proxy test divides `852,655…2^32` into 24
+equal-width `log10(value)` bins. Across those equal multiplicative intervals,
+event counts rise at every contiguous-run threshold tested:
+
+| Minimum run length | Events | Spearman ρ | Holm-adjusted permutation p | Late/early half |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 3,103 | 0.905 | 0.00050 | 6.48× |
+| 2 | 567 | 0.833 | 0.00050 | 6.56× |
+| 10 | 184 | 0.702 | 0.00060 | 7.00× |
+| 100 | 168 | 0.685 | 0.00060 | 7.00× |
+| 1,000 | 104 | 0.690 | 0.00060 | 33.67× |
+
+This supports increasing frequency of deeper obstruction runs per
+multiplicative value scale. It does not test the proposed visited-set
+saturation mechanism: the catalogue has neither survivor time nor the number
+of landing opportunities. See the [saved report](../outputs/deep_obstruction_frequency_report.md)
+and [reproduction script](../scripts/test_deep_obstruction_frequency.py).
 
 ### Predictive measurements
 
@@ -34,8 +54,8 @@ for all future time is a separate question.
 | Random feature search | Best linear code | AUC **0.5994** | Weak-to-moderate single-projection signal |
 | Version C, `A/B/C` | Endpoint and anchor tasks | Mean AUC **0.994–0.996** | Easier retrospective discrimination |
 
-Dataset `D` fold AUCs are `0.7884`, `0.7569`, `0.7863`, `0.7618`, and
-`0.6997`.
+Dataset `D` fold AUCs are `0.7893`, `0.7592`, `0.7857`, `0.7587`, and
+`0.7010`.
 
 ### Why 0.7588 is more informative than 0.99
 

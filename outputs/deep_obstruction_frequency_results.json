@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "question": "Do catalogued obstruction events, including deeper contiguous runs, become more frequent across multiplicative value scales after 852655?",
+  "status": "CATALOGUE_PROXY_SUPPORTED",
+  "definition": {
+    "frequency_denominator": "equal-width log10(value) bins",
+    "depth_proxy": "contiguous catalogue event length",
+    "first_value_inclusive": 852655,
+    "limit_exclusive": 4294967296,
+    "bin_count": 24,
+    "depth_thresholds": [
+      1,
+      2,
+      10,
+      100,
+      1000
+    ],
+    "permutations": 10000,
+    "seed": 852655,
+    "multiple_testing": "Holm family-wise correction over depth thresholds"
+  },
+  "source": {
+    "local_path": "obstructions.txt",
+    "sha256": "5cbf0ada7b909a937282a19281f8d9c4de3ce3cdbcc4f8f4677852e40fd6497e",
+    "upstream": "https://benchaffin.com/recaman/rec-holes-2_32.txt",
+    "event_count": 3103,
+    "missing_value_count": 1277400
+  },
+  "tests": [
+    {
+      "minimum_run_length": 1,
+      "event_count": 3103,
+      "spearman_rho": 0.9052173913043478,
+      "permutation_p_one_sided": 9.999000099990002e-05,
+      "early_half_events": 415,
+      "late_half_events": 2688,
+      "late_to_early_ratio": 6.47710843373494,
+      "holm_adjusted_p": 0.0004999500049995,
+      "supports_increase": true
+    },
+    {
+      "minimum_run_length": 2,
+      "event_count": 567,
+      "spearman_rho": 0.8332670145974376,
+      "permutation_p_one_sided": 9.999000099990002e-05,
+      "early_half_events": 75,
+      "late_half_events": 492,
+      "late_to_early_ratio": 6.56,
+      "holm_adjusted_p": 0.0004999500049995,
+      "supports_increase": true
+    },
+    {
+      "minimum_run_length": 10,
+      "event_count": 184,
+      "spearman_rho": 0.7016479916756184,
+      "permutation_p_one_sided": 0.00029997000299970003,
+      "early_half_events": 23,
+      "late_half_events": 161,
+      "late_to_early_ratio": 7.0,
+      "holm_adjusted_p": 0.0005999400059994001,
+      "supports_increase": true
+    },
+    {
+      "minimum_run_length": 100,
+      "event_count": 168,
+      "spearman_rho": 0.6848372082797458,
+      "permutation_p_one_sided": 0.00029997000299970003,
+      "early_half_events": 21,
+      "late_half_events": 147,
+      "late_to_early_ratio": 7.0,
+      "holm_adjusted_p": 0.0005999400059994001,
+      "supports_increase": true
+    },
+    {
+      "minimum_run_length": 1000,
+      "event_count": 104,
+      "spearman_rho": 0.6900258764555597,
+      "permutation_p_one_sided": 0.00019998000199980003,
+      "early_half_events": 3,
+      "late_half_events": 101,
+      "late_to_early_ratio": 33.666666666666664,
+      "holm_adjusted_p": 0.0005999400059994001,
+      "supports_increase": true
+    }
+  ],
+  "severity_association": {
+    "metric": "Spearman(log10 event start, log10 run length)",
+    "rho": 0.10054874702000201,
+    "two_sided_asymptotic_p": 1.9885070644036672e-08
+  },
+  "exploratory_bin_count_sensitivity": [
+    {
+      "bin_count": 16,
+      "spearman_rho_by_threshold": {
+        "1": 0.9389259348398901,
+        "2": 0.8171126996566215,
+        "10": 0.8145005373354232,
+        "100": 0.7546503519512793,
+        "1000": 0.7143452709800205
+      }
+    },
+    {
+      "bin_count": 20,
+      "spearman_rho_by_threshold": {
+        "1": 0.9503759398496241,
+        "2": 0.8396879774286544,
+        "10": 0.7988596292696715,
+        "100": 0.749699166217773,
+        "1000": 0.7809309526055674
+      }
+    },
+    {
+      "bin_count": 28,
+      "spearman_rho_by_threshold": {
+        "1": 0.8949096880131362,
+        "2": 0.7058512974402837,
+        "10": 0.640634400910733,
+        "100": 0.6121731929914167,
+        "1000": 0.624414372431127
+      }
+    },
+    {
+      "bin_count": 32,
+      "spearman_rho_by_threshold": {
+        "1": 0.909340945559288,
+        "2": 0.762580362944261,
+        "10": 0.6804106625782618,
+        "100": 0.6570726313985158,
+        "1000": 0.632365827650142
+      }
+    }
+  ],
+  "limitations": [
+    "The catalogue is conditioned on remaining unvisited after 10^612 terms.",
+    "Run length is a value-side depth proxy, not survivor time or landing depth.",
+    "Landing/opportunity counts are unavailable, so the causal saturation mechanism is not tested.",
+    "The analysis is descriptive of the published catalogue below 2^32, not a proof of permanent absence."
+  ]
+}

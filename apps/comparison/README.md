@@ -49,6 +49,7 @@ not turn non-overlap into a hole prediction.
 | `viewer/summary/summary.parquet` | 1 | Coverage and validation totals |
 | `viewer/obstructions/features.parquet` | 3,103 | Interpretable coordinates for every catalogue event |
 | `viewer/obstructions/frequency_bands.parquet` | 5 | Normalised event and missing-value rates by value scale |
+| `viewer/obstructions/deep_frequency_tests.parquet` | 5 | Corrected log-scale trend tests by run-depth threshold |
 
 The sequence embedding remains a finite pipeline diagnostic; it is not used as
 evidence that the Chaffin holes are predicted. The obstruction feature map has

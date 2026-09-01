@@ -40,6 +40,17 @@ steps.
 
 ## Reproduce focused results
 
+### Deep-obstruction frequency by multiplicative scale
+
+```bash
+python scripts/test_deep_obstruction_frequency.py
+python scripts/test_deep_obstruction_frequency.py --check
+```
+
+This deterministic test uses 24 equal-width `log10(value)` bins, five fixed
+contiguous-run thresholds, 10,000 one-sided permutations, and Holm correction.
+It writes CSV, JSON, and Markdown artifacts under `outputs/`.
+
 ### Value-side Version C
 
 Run only the harder gap-dynamics dataset:
@@ -96,13 +107,14 @@ python scripts/recaman_phase_space_3d.py \
 
 ## Verify generated application assets
 
-CI treats four derived products as synchronized with their sources:
+CI treats the derived products below as synchronized with their sources:
 
 ```bash
 python scripts/build_space_measurements.py --check
 python scripts/make_infographic.py --check
 python scripts/sync_claude_ai_holes.py --check
 python scripts/make_claude_ai_holes_infographic.py --check
+python scripts/test_deep_obstruction_frequency.py --check
 ```
 
 Remove `--check` only when intentionally regenerating those files.

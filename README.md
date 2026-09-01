@@ -52,6 +52,10 @@ for local launch commands and automated checks.
 - The catalogue expands to **1,277,400 values** in **3,103 events**, spanning
   `852,655` to `4,293,242,951`. These are exact statements about the file, not
   a theorem about the infinite sequence.
+- Across 24 equal multiplicative value bins after `852,655`, deeper contiguous
+  obstruction runs become more frequent at every tested threshold (Holm-adjusted
+  permutation `p ≤ 0.00060`); this supports the pattern, not its proposed
+  visited-set-saturation mechanism.
 - The strongest leakage-reduced value-side result is dataset `D` with mean AUC
   **0.7588** under forward-chaining validation. It shows statistical
   separation, not a per-integer test.

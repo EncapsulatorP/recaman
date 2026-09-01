@@ -27,6 +27,7 @@ def test_real_comparison_tables_are_loaded() -> None:
     assert len(comparison.HOLES) == 3_103
     assert len(comparison.OBSTRUCTION_FEATURES) == 3_103
     assert len(comparison.FREQUENCY_BANDS) == 5
+    assert len(comparison.DEEP_FREQUENCY_TESTS) == 5
     assert len(comparison.CHECKS) == 6
     assert len(comparison.SUMMARY) == 1
 
@@ -78,11 +79,12 @@ def test_obstruction_embedding_covers_catalogue_and_decomposes_frequency() -> No
     assert features.iloc[0]["start"] == 852_655
     assert features["event_id"].is_unique
 
-    frequency_figure, bands, explanation = comparison.frequency_view()
+    frequency_figure, bands, tests, explanation = comparison.frequency_view()
     assert frequency_figure.data
     assert bands["missing_values"].sum() == 1_277_400
     assert (bands["missing_values"] >= bands["event_starts"]).all()
-    assert "does **not** show a simple rise" in explanation
+    assert tests["supports_increase"].all()
+    assert "per equal multiplicative" in explanation
 
 
 def test_validation_report_contains_source_hashes() -> None:
