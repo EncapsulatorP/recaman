@@ -19,13 +19,14 @@ external hosting service or depend on repository deployment secrets.
 ## The three applications
 
 The repository ships three independent Gradio apps. Two explore distinct
-research objects; the third compares published reference and inferred evidence:
+research objects; the third checks published embeddings against independently
+regenerated sequence and catalogue evidence:
 
 | directory | product |
 | --- | --- |
 | `apps/space/` | forward-held-out next-move model arena |
 | `apps/claude_ai_holes/` | lossless obstruction compression lab |
-| `apps/comparison/` | independent sequence/hole comparison and dataset-contract audit |
+| `apps/comparison/` | embedding identity checks and Chaffin horizon coverage |
 
 Each application is self-contained and runs with its directory as the import
 root, so its modules are top-level there (`import predictor`, not
@@ -99,4 +100,5 @@ python apps/comparison/app.py
 ```
 
 It reads `kugguk/recaman-independent-check-bundle` by default. The Overview tab
-reports `PASS`, `PARTIAL`, `WAITING`, or `FAIL` for the published table contract.
+reports the verified coverage boundary; the validation tab exposes exact row
+counts, reconstruction errors, and upstream SHA-256 hashes.

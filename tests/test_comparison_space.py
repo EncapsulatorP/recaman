@@ -1,4 +1,4 @@
-"""Contract and calculation checks for the comparison Space."""
+"""Evidence and rendering checks for the comparison Space."""
 
 from __future__ import annotations
 
@@ -9,11 +9,10 @@ from pathlib import Path
 import pytest
 
 
-pd = pytest.importorskip("pandas")
+pytest.importorskip("pandas")
 pytest.importorskip("plotly")
 pytest.importorskip("gradio")
-pytest.importorskip("huggingface_hub")
-
+pytest.importorskip("pyarrow")
 
 APP_PATH = Path(__file__).resolve().parents[1] / "apps" / "comparison" / "app.py"
 SPEC = importlib.util.spec_from_file_location("recaman_comparison_app", APP_PATH)
@@ -23,76 +22,56 @@ sys.modules[SPEC.name] = comparison
 SPEC.loader.exec_module(comparison)
 
 
-def _valid_store() -> object:
-    sequence = pd.DataFrame(
-        {
-            "n": [0, 1, 2],
-            "a_n_real": [0, 1, 3],
-            "a_n_inferred": [0, 1, 2],
-            "fit_score": [1.0, 0.9, 0.75],
-            "run_id": ["check"] * 3,
-        }
-    )
-    holes = pd.DataFrame(
-        {
-            "value": [930_058, 930_557, 964_420],
-            "is_real_chaffin_hole": [True, True, True],
-            "is_inferred_hole": [True, False, True],
-            "fit_score": [0.99, 0.20, 0.80],
-            "run_id": ["check"] * 3,
-        }
-    )
-    fits = pd.DataFrame(
-        {
-            "run_id": ["check"],
-            "threshold": [0.75],
-            "precision": [1.0],
-            "recall": [2 / 3],
-        }
-    )
-    files = [
-        "viewer/sequence/check.parquet",
-        "viewer/holes/check.parquet",
-        "viewer/fits/check.parquet",
-        "viewer/summary/check.parquet",
-    ]
-    return comparison.Store(
-        sequence=comparison._ensure_sequence_columns(sequence),
-        holes=comparison._ensure_holes_columns(holes),
-        fits=comparison._ensure_fits_columns(fits),
-        summary=pd.DataFrame({"status": ["verified"]}),
-        files=files,
-        status="loaded",
-        loaded_ok=True,
-    )
+def test_real_comparison_tables_are_loaded() -> None:
+    assert len(comparison.SEQUENCE) == 2_801
+    assert len(comparison.HOLES) == 3_102
+    assert len(comparison.CHECKS) == 6
+    assert len(comparison.SUMMARY) == 1
 
 
-def test_comparison_space_imports_without_loading_remote_data() -> None:
-    assert comparison.demo is not None
-    assert comparison.DATASET_ID == "kugguk/recaman-independent-check-bundle"
+def test_embedding_sequence_matches_independent_recurrence_exactly() -> None:
+    assert comparison.SEQUENCE["value_exact"].all()
+    assert comparison.SEQUENCE["blocked_exact"].all()
+    assert comparison.SEQUENCE["delta"].eq(0).all()
+    assert comparison.SEQUENCE["a_n_embedding"].max() == 10_163
 
 
-def test_validation_panel_reports_a_complete_valid_contract(monkeypatch) -> None:
-    monkeypatch.setattr(comparison, "STORE", _valid_store())
+def test_every_embedding_reconstruction_check_passes() -> None:
+    assert comparison.CHECKS["status"].eq("PASS").all()
+    assert comparison.CHECKS["max_abs_error"].eq(0.0).all()
+    assert comparison.CHECKS["rows"].sum() == 235_199
+    assert comparison.CHECKS["exact_rows"].sum() == 235_199
+
+
+def test_chaffin_catalogue_is_exact_and_outside_embedding_span() -> None:
+    summary = comparison.SUMMARY.iloc[0]
+    assert summary["chaffin_event_count"] == 3_102
+    assert summary["chaffin_value_count"] == 1_277_399
+    assert summary["chaffin_min"] == 930_058
+    assert summary["chaffin_max"] == 4_293_242_951
+    assert summary["chaffin_events_within_embedding_span"] == 0
+    assert comparison.HOLES["coverage_status"].eq("OUTSIDE_EMBEDDING_SPAN").all()
+
+
+def test_views_expose_exact_matches_and_horizon_boundary() -> None:
+    sequence_figure, mismatches = comparison.sequence_view(2_800)
+    assert len(sequence_figure.data) == 2
+    assert mismatches.empty
+
+    check_figure, checks = comparison.embedding_checks_view()
+    assert len(check_figure.data) == 1
+    assert len(checks) == 6
+
+    hole_figure, holes, boundary = comparison.chaffin_view(1)
+    assert hole_figure.data
+    assert len(holes) == 3_102
+    assert "0 of 3,102" in boundary
+    assert "not testable by this finite embedding" in boundary
+
+
+def test_validation_report_contains_source_hashes() -> None:
     report = comparison.validation_report()
-    assert "Dataset validation — **PASS**" in report
-    assert "4/4 groups published" in report
-    assert "3 scores in [0, 1]" in report
-
-
-def test_validation_panel_rejects_out_of_range_scores(monkeypatch) -> None:
-    store = _valid_store()
-    store.holes.loc[0, "fit_score"] = 1.01
-    monkeypatch.setattr(comparison, "STORE", store)
-    report = comparison.validation_report()
-    assert "Dataset validation — **FAIL**" in report
-    assert "Values outside [0, 1]" in report
-
-
-def test_hole_metrics_are_computed_from_boolean_evidence(monkeypatch) -> None:
-    monkeypatch.setattr(comparison, "STORE", _valid_store())
-    rows = comparison._hole_comparison_rows("check", 1_000_000, "≥ 0.75 fit")
-    report = comparison.metrics_markdown(rows, "≥ 0.75 fit")
-    assert "| Overlap / TP | **2** |" in report
-    assert "| False positives | **0** |" in report
-    assert "| Missed real holes | **1** |" in report
+    assert "Validation status — **PASS**" in report
+    assert "2,801/2,801 exact" in report
+    for digest in comparison.MANIFEST["embedding_sha256"].values():
+        assert digest in report

@@ -13,7 +13,7 @@ meanings of obstruction must remain distinct.
 | --- | --- | --- |
 | [Value-side hole explorer](https://github.com/EncapsulatorP/recaman/tree/main/apps/claude_ai_holes) | Catalogue counts, runs, span density, and model scores | It does not certify a submitted number as permanently absent |
 | [Process-bit explorer](https://github.com/EncapsulatorP/recaman/tree/main/apps/space) | Next-bit baseline, sequence prefixes, and phase slips | It does not identify missing integers |
-| [Independent comparison visualizer](https://github.com/EncapsulatorP/recaman/tree/main/apps/comparison) | Published real/inferred sequence and hole tables with contract validation | It does not fabricate missing viewer tables or turn fit thresholds into proofs |
+| [Independent comparison visualizer](https://github.com/EncapsulatorP/recaman/tree/main/apps/comparison) | Exact embedding/recurrence checks and Chaffin horizon coverage | It does not treat catalogue events outside the finite embedding span as predictions |
 
 The repository does not advertise public hosted URLs. This page links to the
 versioned source and documents local execution.
@@ -41,8 +41,9 @@ python -m pip install -r apps/comparison/requirements.txt
 python apps/comparison/app.py
 ```
 
-The comparison app reads the public independent-check dataset. Its validation
-panel distinguishes complete, partial, missing, and invalid table contracts.
+The comparison app uses hash-pinned NPZ files from the public independent-check
+dataset. Its validation panel shows exact reconstruction counts and makes the
+finite-horizon boundary with Chaffin's catalogue explicit.
 
 Gradio prints the local address after startup.
 

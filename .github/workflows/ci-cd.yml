@@ -216,4 +216,6 @@ jobs:
       - name: Validate the comparison contract and calculations
         env:
           MPLCONFIGDIR: ${{ runner.temp }}/matplotlib
-        run: python -m pytest -q tests/test_comparison_space.py tests/test_space_cards.py
+        run: |
+          python scripts/build_comparison_tables.py --check
+          python -m pytest -q tests/test_comparison_space.py tests/test_space_cards.py

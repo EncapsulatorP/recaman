@@ -9,73 +9,64 @@ python_version: "3.11"
 app_file: app.py
 pinned: false
 license: mit
-short_description: Compare Recamán reference and inferred evidence
+short_description: Validate Recamán embeddings against exact evidence
 ---
 
 # Recamán Independent Check Visualizer
 
-Interactive companion maintained under the
-[`kugguk`](https://huggingface.co/kugguk) Hugging Face account for:
-
+Source-backed visual validation for the
 [`kugguk/recaman-independent-check-bundle`](https://huggingface.co/datasets/kugguk/recaman-independent-check-bundle)
+embeddings, an independently regenerated Recamán prefix, and Benjamin
+Chaffin's checked-in obstruction catalogue.
 
-The Space compares:
+## What is compared
 
-- real Recamán sequence values against inferred sequence output;
-- real Chaffin-hole evidence against inferred-hole candidates;
-- the >= 0.99 and >= 0.75 fit views;
-- misses, false positives, overlap, precision, recall, F1 and Jaccard;
-- raw viewer tables and downloadable filtered CSVs.
+- The 2,801 published `recaman_sequence.npz` values against an independent
+  implementation of the recurrence.
+- The 2,801 published blocked-step labels against independently regenerated
+  labels.
+- Every row of the delay, spatiotemporal, and arc-lift embeddings against a
+  fresh reconstruction from the regenerated sequence.
+- All 3,102 Chaffin catalogue intervals against the embedding's actual
+  finite value span.
 
-## Dataset contract
+The embedding covers steps `0…2800` and values `0…10,163`. Chaffin's
+catalogue begins at `930,058`, so none of its events lies inside this
+embedding's value span. The Space displays that boundary explicitly: it does
+not turn non-overlap into a hole prediction.
 
-The dataset repo should publish:
+## Generated tables
 
-- `viewer/sequence/*.parquet`
-- `viewer/holes/*.parquet`
-- `viewer/fits/*.parquet`
-- `viewer/summary/*.parquet` (optional but recommended)
+| Table | Rows | Meaning |
+|---|---:|---|
+| `viewer/sequence/sequence.parquet` | 2,801 | Reference and embedded values/bits, deltas, exact-match flags |
+| `viewer/holes/chaffin_events.parquet` | 3,102 | Exact catalogue intervals and embedding-span coverage |
+| `viewer/fits/embedding_checks.parquet` | 6 | Exact reconstruction checks and source hashes |
+| `viewer/summary/summary.parquet` | 1 | Coverage and validation totals |
 
-### Required sequence columns
+`viewer/manifest.json` records the source URLs and SHA-256 hashes. The four
+NPZ files and their upstream metadata are retained under `source/embeddings/`
+so the checks remain reproducible without network access.
 
-- `n`
-- `a_n_real`
+## Regenerate and verify
 
-Recommended:
+From the repository root:
 
-- `a_n_inferred`
-- `delta`
-- `abs_delta`
-- `is_exact_match`
-- `fit_score`
-- `fit_ge_075`
-- `fit_ge_099`
-- `run_id`
+```bash
+python scripts/build_comparison_tables.py
+python scripts/build_comparison_tables.py --check
+```
 
-### Required hole columns
+CI runs the check mode and the Space tests. Any source-hash mismatch, sequence
+or blocked-bit mismatch, embedding-coordinate drift, catalogue drift, or stale
+Parquet file fails the build.
 
-- `value`
-- `is_real_chaffin_hole`
+## Run locally
 
-Recommended:
+```bash
+python -m pip install -r apps/comparison/requirements.txt
+python apps/comparison/app.py
+```
 
-- `is_inferred_hole`
-- `fit_score`
-- `inferred_score`
-- `fit_ge_075`
-- `fit_ge_099`
-- `category`
-- `run_id`
-
-All fit scores should use the normalized range `0.0 ... 1.0`.
-
-The app includes an explicit validation panel. It reports whether every table
-group is present, required columns are valid, and fit scores stay in the
-declared range. Missing data leaves the interface online with a clear
-`WAITING` status rather than presenting fabricated comparisons.
-
-## Optional environment variables
-
-- `RECAMAN_DATASET_ID`
-- `RECAMAN_DATASET_REVISION`
-- `HF_TOKEN` (only needed if the dataset becomes private/gated)
+Maintained for the [`kugguk`](https://huggingface.co/kugguk) Hugging Face
+account. Released under the MIT License.

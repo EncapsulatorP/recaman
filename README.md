@@ -42,7 +42,7 @@ The repository includes three locally runnable Gradio tools:
 
 - [Recamán Obstruction Compression Lab](apps/claude_ai_holes/README.md) — lossless range/delta codecs, phase-slip encoding and exact round-trip checks.
 - [Recamán Next-Move Model Lab](apps/space/README.md) — inferred agents, chronological holdouts, tower/modular ablations and predictive code length.
-- [Recamán Independent Check Visualizer](apps/comparison/README.md) — real-versus-inferred sequence and hole views, downloadable filtered tables, and an explicit dataset-contract audit.
+- [Recamán Independent Check Visualizer](apps/comparison/README.md) — exact NPZ-versus-recurrence checks, Chaffin horizon coverage, downloadable Parquet tables, and source-hash validation.
 
 They are not advertised as public hosted demos. See [Demos and CI](wiki/Demos-and-Deployment.md)
 for local launch commands and automated checks.
