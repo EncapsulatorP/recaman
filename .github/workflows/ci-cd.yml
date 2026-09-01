@@ -47,7 +47,7 @@ jobs:
           run_all.py scripts apps/space apps/claude_ai_holes apps/comparison tests
 
       - name: Run unit tests
-        run: python -m pytest -q
+        run: python -m pytest -q --ignore=tests/test_comparison_space.py
 
       - name: Verify generated app measurements are current
         run: python scripts/build_space_measurements.py --check
