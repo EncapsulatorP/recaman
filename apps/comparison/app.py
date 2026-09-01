@@ -21,10 +21,6 @@ TABLE_PATHS = {
     "obstruction_features": VIEWER_DIR / "obstructions" / "features.parquet",
     "frequency_bands": VIEWER_DIR / "obstructions" / "frequency_bands.parquet",
     "deep_frequency_tests": VIEWER_DIR / "obstructions" / "deep_frequency_tests.parquet",
-    "anatomy_events": VIEWER_DIR / "anatomy" / "events.parquet",
-    "anatomy_scales": VIEWER_DIR / "anatomy" / "scales.parquet",
-    "anatomy_arithmetic": VIEWER_DIR / "anatomy" / "arithmetic.parquet",
-    "anatomy_summary": VIEWER_DIR / "anatomy" / "summary.parquet",
 }
 MANIFEST_PATH = VIEWER_DIR / "manifest.json"
 
@@ -52,10 +48,6 @@ SUMMARY = TABLES["summary"]
 OBSTRUCTION_FEATURES = TABLES["obstruction_features"]
 FREQUENCY_BANDS = TABLES["frequency_bands"]
 DEEP_FREQUENCY_TESTS = TABLES["deep_frequency_tests"]
-ANATOMY_EVENTS = TABLES["anatomy_events"]
-ANATOMY_SCALES = TABLES["anatomy_scales"]
-ANATOMY_ARITHMETIC = TABLES["anatomy_arithmetic"]
-ANATOMY_SUMMARY = TABLES["anatomy_summary"]
 
 
 def validation_report() -> str:
@@ -137,132 +129,6 @@ def obstruction_feature_view() -> tuple[go.Figure, pd.DataFrame]:
     )
     figure.update_traces(marker={"size": 3, "opacity": 0.72})
     return figure, OBSTRUCTION_FEATURES
-
-
-def anatomy_overview() -> str:
-    row = ANATOMY_SUMMARY.iloc[0]
-    return f"""
-# Obstruction anatomy — beyond frequency
-
-| Metric | Verified result |
-|---|---:|
-| Run-length inequality (Gini) | **{float(row.gini_run_length):.4f}** |
-| Missing values held by largest 1% of events | **{float(row.top_one_percent_missing_share):.1%}** |
-| Longest contiguous run | **{int(row.maximum_run_length):,}** |
-| Run severity vs nearest-event isolation | **ρ = {float(row.isolation_rho):.3f}** |
-| Observed/null median neighbour distance | **{float(row.clustering_observed_to_null):.1%}** |
-| Small-prime tests surviving Holm correction | **{int(row.arithmetic_significant_after_holm)} of {len(ANATOMY_ARITHMETIC)}** |
-
-### Supported reading
-
-The missing set is dominated by a small number of long runs, and severe runs
-sit in denser obstruction neighbourhoods rather than behaving like isolated
-outliers. The matched-null clustering result uses
-**{int(row.clustering_null_replicates):,}** deterministic replicates
-(`p = {float(row.clustering_empirical_p):.4g}`). The six-prime screen finds no
-family-wise-significant arithmetic enrichment.
-
-### Boundary
-
-These are value-side catalogue measurements after Chaffin's `10^612`-term
-computation. Run length is not survivor time, and the matched null cannot
-replace missing landing-opportunity data. Structure is verified; mechanism is
-still a hypothesis.
-"""
-
-
-def severity_concentration_view() -> tuple[go.Figure, pd.DataFrame]:
-    figure = go.Figure()
-    figure.add_trace(
-        go.Scatter(
-            x=ANATOMY_EVENTS["cumulative_event_share"],
-            y=ANATOMY_EVENTS["cumulative_missing_share"],
-            mode="lines",
-            name="Catalogued runs",
-            line={"color": "#2563a6", "width": 3},
-        )
-    )
-    figure.add_trace(
-        go.Scatter(
-            x=[0, 1],
-            y=[0, 1],
-            mode="lines",
-            name="Equal contribution",
-            line={"color": "#555b66", "dash": "dash", "width": 1.5},
-        )
-    )
-    figure.update_layout(
-        title="Concentration of missing values across obstruction events",
-        xaxis_title="Cumulative share of events (shortest to longest)",
-        yaxis_title="Cumulative share of missing values",
-        xaxis_tickformat=".0%",
-        yaxis_tickformat=".0%",
-        legend_title_text=None,
-    )
-    largest = ANATOMY_EVENTS.nlargest(20, "length")[
-        ["event_id", "start", "end", "length", "isolation_gap", "severity_class"]
-    ]
-    return figure, largest
-
-
-def isolation_view() -> tuple[go.Figure, pd.DataFrame]:
-    visible = ANATOMY_EVENTS.dropna(subset=["isolation_gap"]).copy()
-    figure = px.scatter(
-        visible,
-        x="isolation_gap",
-        y="length",
-        color="severity_class",
-        log_x=True,
-        log_y=True,
-        opacity=0.58,
-        color_discrete_map={
-            "singleton": "#94a3b8",
-            "2–9": "#5b7fa3",
-            "10–99": "#2563a6",
-            "100–999": "#b7791f",
-            "≥1,000": "#7c3f75",
-        },
-        hover_data=["event_id", "start", "end"],
-        title="Run severity versus nearest obstruction-event gap",
-        labels={
-            "isolation_gap": "Nearest event gap (values, log scale)",
-            "length": "Contiguous run length (log scale)",
-            "severity_class": "Run class",
-        },
-    )
-    figure.update_traces(marker={"size": 6})
-    figure.update_layout(legend_title_text="Run class")
-    return figure, visible.nlargest(100, "length")
-
-
-def scale_and_arithmetic_view() -> tuple[go.Figure, pd.DataFrame, go.Figure, pd.DataFrame]:
-    scale_figure = px.bar(
-        ANATOMY_SCALES,
-        x="scale",
-        y="range_event_share",
-        text=ANATOMY_SCALES["range_event_share"].map(lambda value: f"{value:.1%}"),
-        color_discrete_sequence=["#2563a6"],
-        title="Share of obstruction events that are multi-value runs",
-        labels={"scale": "Equal-width log10(value) third", "range_event_share": "Range-event share"},
-    )
-    scale_figure.update_layout(yaxis_tickformat=".0%", showlegend=False)
-
-    arithmetic = ANATOMY_ARITHMETIC.copy()
-    arithmetic["enrichment_percent"] = (
-        arithmetic["observed_to_expected"] - 1.0
-    ) * 100.0
-    arithmetic_figure = px.bar(
-        arithmetic,
-        x=arithmetic["prime"].astype(str),
-        y="enrichment_percent",
-        text=arithmetic["enrichment_percent"].map(lambda value: f"{value:+.1f}%"),
-        color_discrete_sequence=["#7c3f75"],
-        title="Small-prime divisibility screen for event starts",
-        labels={"x": "Prime divisor", "enrichment_percent": "Difference from uniform expectation"},
-    )
-    arithmetic_figure.add_hline(y=0, line_color="#555b66", line_width=1.5)
-    arithmetic_figure.update_layout(showlegend=False, yaxis_ticksuffix="%")
-    return scale_figure, ANATOMY_SCALES, arithmetic_figure, arithmetic
 
 
 def frequency_view() -> tuple[go.Figure, pd.DataFrame, pd.DataFrame, str]:
@@ -474,25 +340,6 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
         )
         frequency_explanation = gr.Markdown()
 
-    with gr.Tab("Obstruction anatomy"):
-        gr.Markdown(anatomy_overview())
-        severity_plot = gr.Plot()
-        severe_event_table = gr.Dataframe(
-            interactive=False, label="Twenty longest catalogued runs"
-        )
-        isolation_plot = gr.Plot()
-        isolation_table = gr.Dataframe(
-            interactive=False, label="One hundred longest runs with isolation metrics"
-        )
-        scale_plot = gr.Plot()
-        scale_table = gr.Dataframe(
-            interactive=False, label="Equal-log scale thirds"
-        )
-        arithmetic_plot = gr.Plot()
-        arithmetic_table = gr.Dataframe(
-            interactive=False, label="Predeclared divisibility tests"
-        )
-
     with gr.Tab("Raw evidence"):
         gr.Markdown(
             "All downloadable files below are the exact tables used by the charts."
@@ -527,15 +374,6 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
             frequency_test_table,
             frequency_explanation,
         ],
-    )
-    demo.load(
-        severity_concentration_view,
-        outputs=[severity_plot, severe_event_table],
-    )
-    demo.load(isolation_view, outputs=[isolation_plot, isolation_table])
-    demo.load(
-        scale_and_arithmetic_view,
-        outputs=[scale_plot, scale_table, arithmetic_plot, arithmetic_table],
     )
 
 

@@ -45,24 +45,6 @@ saturation mechanism: the catalogue has neither survivor time nor the number
 of landing opportunities. See the [saved report](../outputs/deep_obstruction_frequency_report.md)
 and [reproduction script](../scripts/test_deep_obstruction_frequency.py).
 
-### Obstruction anatomy beyond frequency
-
-The complementary anatomy analysis gives a sharper structural picture:
-
-| Metric | Result |
-|---|---:|
-| Run-length Gini | **0.9849** |
-| Missing values in the largest 1% of events | **77.6%** |
-| Run length vs nearest-event isolation | **ρ = −0.243**, `p = 7.62×10⁻⁴³` |
-| Median neighbour distance vs magnitude-matched null | **5.1%**, empirical `p = 0.000999` |
-| Small-prime divisibility tests surviving Holm correction | **0 of 6** |
-
-The positive result is clustering and severity concentration, not a simple
-small-prime rule. Longer runs occur in denser obstruction neighbourhoods.
-Because the null matches value scale but cannot match unavailable landing
-opportunities, this remains evidence about catalogue geometry—not the causal
-Recamán state. See the [anatomy report](../outputs/obstruction_anatomy_report.md).
-
 ### Predictive measurements
 
 | Experiment | Evaluation | Result | Interpretation |

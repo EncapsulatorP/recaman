@@ -18,10 +18,6 @@ EMBEDDING_DIR = APP_DIR / "source" / "embeddings"
 VIEWER_DIR = APP_DIR / "viewer"
 CATALOGUE = ROOT / "obstructions.txt"
 DEEP_FREQUENCY_RESULTS = ROOT / "outputs" / "deep_obstruction_frequency_results.json"
-ANATOMY_EVENTS = ROOT / "outputs" / "obstruction_anatomy_events.parquet"
-ANATOMY_SCALES = ROOT / "outputs" / "obstruction_anatomy_scales.csv"
-ANATOMY_ARITHMETIC = ROOT / "outputs" / "obstruction_anatomy_arithmetic.csv"
-ANATOMY_SUMMARY = ROOT / "outputs" / "obstruction_anatomy_summary.json"
 
 EXPECTED_SHA256 = {
     "arc_lift.npz": "bc59999d42c2eec3f33b9030aae12add3f9a230552fcb9b1b55a65f9f94ea713",
@@ -329,28 +325,6 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
     if deep_payload["source"]["sha256"] != sha256(CATALOGUE):
         raise ValueError("deep-frequency result was generated from a different catalogue")
     deep_frequency_tests = pd.DataFrame(deep_payload["tests"])
-    anatomy_payload = json.loads(ANATOMY_SUMMARY.read_text(encoding="utf-8"))
-    if anatomy_payload["source"]["sha256"] != sha256(CATALOGUE):
-        raise ValueError("obstruction-anatomy result used a different catalogue")
-    anatomy_events = pd.read_parquet(ANATOMY_EVENTS)
-    anatomy_scales = pd.read_csv(ANATOMY_SCALES)
-    anatomy_arithmetic = pd.read_csv(ANATOMY_ARITHMETIC)
-    anatomy_summary = pd.DataFrame(
-        [
-            {
-                "status": anatomy_payload["status"],
-                "gini_run_length": anatomy_payload["severity"]["gini_run_length"],
-                "top_one_percent_missing_share": anatomy_payload["severity"]["top_one_percent_missing_share"],
-                "maximum_run_length": anatomy_payload["severity"]["maximum_run_length"],
-                "isolation_rho": anatomy_payload["isolation"]["rho"],
-                "isolation_p": anatomy_payload["isolation"]["two_sided_p"],
-                "clustering_observed_to_null": anatomy_payload["clustering"]["observed_to_null"],
-                "clustering_empirical_p": anatomy_payload["clustering"]["empirical_one_sided_p"],
-                "clustering_null_replicates": anatomy_payload["clustering"]["null_replicates"],
-                "arithmetic_significant_after_holm": anatomy_payload["arithmetic"]["significant_after_correction"],
-            }
-        ]
-    )
 
     summary = pd.DataFrame(
         [
@@ -373,7 +347,6 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
                 "catalogue_feature_events_covered": len(obstruction_features),
                 "catalogue_feature_event_coverage": 1.0,
                 "deep_frequency_status": deep_payload["status"],
-                "obstruction_anatomy_status": anatomy_payload["status"],
                 "overall_status": (
                     "PASS" if fits["status"].eq("PASS").all() else "FAIL"
                 ),
@@ -389,8 +362,6 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
         "catalogue_sha256": sha256(CATALOGUE),
         "deep_frequency_result_source": "outputs/deep_obstruction_frequency_results.json",
         "deep_frequency_result_sha256": sha256(DEEP_FREQUENCY_RESULTS),
-        "obstruction_anatomy_summary_source": "outputs/obstruction_anatomy_summary.json",
-        "obstruction_anatomy_summary_sha256": sha256(ANATOMY_SUMMARY),
         "embedding_sha256": hashes,
         "tables": {
             "sequence": "viewer/sequence/sequence.parquet",
@@ -400,10 +371,6 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
             "obstruction_features": "viewer/obstructions/features.parquet",
             "frequency_bands": "viewer/obstructions/frequency_bands.parquet",
             "deep_frequency_tests": "viewer/obstructions/deep_frequency_tests.parquet",
-            "anatomy_events": "viewer/anatomy/events.parquet",
-            "anatomy_scales": "viewer/anatomy/scales.parquet",
-            "anatomy_arithmetic": "viewer/anatomy/arithmetic.parquet",
-            "anatomy_summary": "viewer/anatomy/summary.parquet",
         },
     }
     return {
@@ -414,10 +381,6 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
         "obstruction_features": obstruction_features,
         "frequency_bands": frequency_bands,
         "deep_frequency_tests": deep_frequency_tests,
-        "anatomy_events": anatomy_events,
-        "anatomy_scales": anatomy_scales,
-        "anatomy_arithmetic": anatomy_arithmetic,
-        "anatomy_summary": anatomy_summary,
     }, manifest
 
 
@@ -434,10 +397,6 @@ def main() -> int:
         "obstruction_features": VIEWER_DIR / "obstructions" / "features.parquet",
         "frequency_bands": VIEWER_DIR / "obstructions" / "frequency_bands.parquet",
         "deep_frequency_tests": VIEWER_DIR / "obstructions" / "deep_frequency_tests.parquet",
-        "anatomy_events": VIEWER_DIR / "anatomy" / "events.parquet",
-        "anatomy_scales": VIEWER_DIR / "anatomy" / "scales.parquet",
-        "anatomy_arithmetic": VIEWER_DIR / "anatomy" / "arithmetic.parquet",
-        "anatomy_summary": VIEWER_DIR / "anatomy" / "summary.parquet",
     }
     manifest_path = VIEWER_DIR / "manifest.json"
     if args.check:

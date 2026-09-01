@@ -7,8 +7,6 @@
   "catalogue_sha256": "5cbf0ada7b909a937282a19281f8d9c4de3ce3cdbcc4f8f4677852e40fd6497e",
   "deep_frequency_result_source": "outputs/deep_obstruction_frequency_results.json",
   "deep_frequency_result_sha256": "12407288221f04efe194a225484997d530cb6589d91cd112585ac77bbd213f54",
-  "obstruction_anatomy_summary_source": "outputs/obstruction_anatomy_summary.json",
-  "obstruction_anatomy_summary_sha256": "15421ba3ffc851d0d118a7d3f96776ef8bf6d2689eee7fb27b94cd894f9680f3",
   "embedding_sha256": {
     "arc_lift.npz": "bc59999d42c2eec3f33b9030aae12add3f9a230552fcb9b1b55a65f9f94ea713",
     "delay_tau2.npz": "ca7a8e6b32646b2810214c7db608760d12999529c8be887354fb16a00e92d96b",
@@ -23,10 +21,6 @@
     "summary": "viewer/summary/summary.parquet",
     "obstruction_features": "viewer/obstructions/features.parquet",
     "frequency_bands": "viewer/obstructions/frequency_bands.parquet",
-    "deep_frequency_tests": "viewer/obstructions/deep_frequency_tests.parquet",
-    "anatomy_events": "viewer/anatomy/events.parquet",
-    "anatomy_scales": "viewer/anatomy/scales.parquet",
-    "anatomy_arithmetic": "viewer/anatomy/arithmetic.parquet",
-    "anatomy_summary": "viewer/anatomy/summary.parquet"
+    "deep_frequency_tests": "viewer/obstructions/deep_frequency_tests.parquet"
   }
 }

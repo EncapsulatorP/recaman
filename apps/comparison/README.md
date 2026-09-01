@@ -33,8 +33,6 @@ Chaffin's checked-in obstruction catalogue.
   including `852,655`, using value scale, preceding gap, and run length.
 - A value-band decomposition that separates event-start frequency from the
   growth caused by multi-value obstruction runs.
-- An obstruction-anatomy lab for severity concentration, local isolation,
-  matched-null clustering, scale stability, and corrected arithmetic tests.
 
 The embedding covers steps `0…2800` and values `0…10,163`. Chaffin's
 catalogue begins at `852,655`, so none of its events lies inside this
@@ -52,10 +50,6 @@ not turn non-overlap into a hole prediction.
 | `viewer/obstructions/features.parquet` | 3,103 | Interpretable coordinates for every catalogue event |
 | `viewer/obstructions/frequency_bands.parquet` | 5 | Normalised event and missing-value rates by value scale |
 | `viewer/obstructions/deep_frequency_tests.parquet` | 5 | Corrected log-scale trend tests by run-depth threshold |
-| `viewer/anatomy/events.parquet` | 3,103 | Event severity, nearest gaps, and Lorenz coordinates |
-| `viewer/anatomy/scales.parquet` | 3 | Equal-log scale stability metrics |
-| `viewer/anatomy/arithmetic.parquet` | 6 | Predeclared small-prime tests with Holm correction |
-| `viewer/anatomy/summary.parquet` | 1 | Verified anatomy headline metrics |
 
 The sequence embedding remains a finite pipeline diagnostic; it is not used as
 evidence that the Chaffin holes are predicted. The obstruction feature map has
@@ -72,7 +66,6 @@ From the repository root:
 ```bash
 python scripts/build_comparison_tables.py
 python scripts/build_comparison_tables.py --check
-python scripts/analyze_obstruction_anatomy.py --check
 ```
 
 CI runs the check mode and the Space tests. Any source-hash mismatch, sequence

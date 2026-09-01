@@ -56,10 +56,6 @@ for local launch commands and automated checks.
   obstruction runs become more frequent at every tested threshold (Holm-adjusted
   permutation `p ≤ 0.00060`); this supports the pattern, not its proposed
   visited-set-saturation mechanism.
-- Beyond frequency, run severity is extremely concentrated (Gini `0.9849`;
-  the largest 1% of events contain `77.6%` of missing values), and median
-  nearest-neighbour distance is `5.1%` of a magnitude-matched null. No tested
-  small-prime divisibility effect survives Holm correction.
 - The strongest leakage-reduced value-side result is dataset `D` with mean AUC
   **0.7588** under forward-chaining validation. It shows statistical
   separation, not a per-integer test.
