@@ -1,0 +1,19 @@
+{
+  "generator": "scripts/build_comparison_tables.py",
+  "embedding_source": "https://huggingface.co/datasets/kugguk/recaman-independent-check-bundle/tree/main/embeddings",
+  "catalogue_source": "obstructions.txt",
+  "catalogue_sha256": "c55f4f720fb8a5f9445bfead42f5a65e32771ac91a30db2a95de7e5abc151c7b",
+  "embedding_sha256": {
+    "arc_lift.npz": "bc59999d42c2eec3f33b9030aae12add3f9a230552fcb9b1b55a65f9f94ea713",
+    "delay_tau2.npz": "ca7a8e6b32646b2810214c7db608760d12999529c8be887354fb16a00e92d96b",
+    "metadata.json": "c15d6d303fe37d6c37a309f436f69228263423b73e17be021927f6168b4a4423",
+    "recaman_sequence.npz": "e0f880bb425580e6bb50d7d2b6068d54403a17ff1aeca887c8ef942ee9a72e8d",
+    "spatiotemporal.npz": "425283939cd9ade61e5252bc8c757fa4b4121908f732adced7ab4057406f4abc"
+  },
+  "tables": {
+    "sequence": "viewer/sequence/sequence.parquet",
+    "holes": "viewer/holes/chaffin_events.parquet",
+    "fits": "viewer/fits/embedding_checks.parquet",
+    "summary": "viewer/summary/summary.parquet"
+  }
+}
