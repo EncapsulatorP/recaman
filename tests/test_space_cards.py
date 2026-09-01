@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CARDS = (
     ROOT / "apps" / "space" / "README.md",
     ROOT / "apps" / "claude_ai_holes" / "README.md",
+    ROOT / "apps" / "comparison" / "README.md",
 )
 ALLOWED_COLOURS = {"red", "yellow", "green", "blue", "indigo", "purple", "pink", "gray"}
 
