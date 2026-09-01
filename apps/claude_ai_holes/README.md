@@ -28,7 +28,7 @@ Certified holes · range codecs · phase-slip codes · held-out predictive compr
 [![Research](https://img.shields.io/badge/Research-EncapsulatorP-6f42c1)](https://encapsulatorp.github.io/)
 [![Source](https://img.shields.io/badge/Source-recaman__obstructions-00859b)](https://github.com/kugguk2022/recaman_obstructions)
 [![Catalogue](https://img.shields.io/badge/Holes-1%2C277%2C399-b14da7)](https://github.com/kugguk2022/recaman_obstructions/blob/main/obstructions.txt)
-[![Best honest AUC](https://img.shields.io/badge/best%20honest%20AUC-0.7586-9e671a)](https://github.com/kugguk2022/recaman_obstructions)
+[![Best honest AUC](https://img.shields.io/badge/best%20honest%20AUC-0.7588-9e671a)](https://github.com/kugguk2022/recaman_obstructions)
 [![Variant](https://img.shields.io/badge/variant-Claude.ai-10263d)](https://github.com/kugguk2022/recaman_obstructions/tree/main/apps/claude_ai_holes)
 
 ---
@@ -55,9 +55,9 @@ everything. An integer the sequence misses **at every step, forever** is an
 ## What the catalogue looks like
 
 ```text
-1,277,399 integers that Recamán never reaches
+1,277,400 integers not reached by Chaffin's `10^612`-term horizon
 │
-├── 3,102 events           · spanning 930,058 → 4,293,242,951
+├── 3,103 events           · spanning 852,655 → 4,293,242,951
 │   ├── 2,535 singletons   · a lone missing integer
 │   └──   567 runs         · consecutive missing integers
 │
@@ -94,23 +94,28 @@ decoded obstruction signs must reconstruct the exact final Recamán term.
 
 | Task | Mean AUC | Reading |
 | --- | ---: | --- |
-| Version C **D** · gap dynamics | `0.7586` | 🟢 the headline — leakage-reduced, forward CV |
+| Version C **D** · gap dynamics | `0.7588` | 🟢 the headline — leakage-reduced, forward CV |
 | random-matrix · RF cross-validation | `0.6633` | 🟢 194,358 holes vs digit-matched controls |
 | random-matrix · best linear code | `0.5994` | 🟢 single projection, 42 features |
 | Version C **A / B / C** | `0.99+` | 🟡 easier question — a ceiling, not a result |
 
+The Version C scores above were regenerated from the corrected 3,103-event
+catalogue. The saved 6,000-trial random-matrix search predates restoration of
+the `852,655` singleton; it is retained as a historical benchmark and must be
+rerun before being compared at full precision with the corrected catalogue.
+
 **This Space gives no per-number verdict.** Not for your favourite integer, not
-for any integer. A best honest separation of `0.7586` is real signal and
+for any integer. A best honest separation of `0.7588` is real signal and
 nowhere near a test, and pretending otherwise would misrepresent the work.
 
 Three more boundaries, stated plainly:
 
-- 🔒 The catalogue is **complete** over `930,058 – 4,293,242,951` — inside that
+- 🔒 The catalogue is **complete** over `852,655 – 4,293,242,951` — inside that
   span, an integer that is not listed **is** reached. Outside it, silence.
 - 📏 The structural counts are **exact** over the catalogue. The AUCs are
   **measurements** from saved runs, not proofs about the sequence.
 - 🧭 The arc picture in *Method and sources* draws the first 40 steps. Nothing
-  in that range is a hole — the smallest one here sits at `930,058`.
+  in that range is a hole — the smallest one here sits at `852,655`.
 
 ---
 

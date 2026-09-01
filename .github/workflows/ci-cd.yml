@@ -178,11 +178,11 @@ jobs:
           assert app.demo is not None;
           assert app.CATALOGUE.event_count == 3102;
           strip, report = app.explore('full span', 0);
-          assert strip.startswith('<svg') and '1,277,399' in report;
+          assert strip.startswith('<svg') and '1,277,400' in report;
           catalogue_svg, process_svg, compression_report, compression = app.compression_experiment(20000);
           assert catalogue_svg.startswith('<svg') and process_svg.startswith('<svg');
           assert compression['catalogue']['event_round_trip'] and compression_report;
-          assert '1,277,399' in app.overview()"
+          assert '1,277,400' in app.overview()"
 
   comparison-space-smoke:
     name: Independent comparison app smoke test

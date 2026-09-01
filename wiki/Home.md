@@ -40,8 +40,8 @@ measurements, and explicit limits on every claim.
 
 | Statement | Status |
 | --- | --- |
-| The catalogue contains 1,277,399 values across 3,102 encoded events | Verified from the checked-in file |
-| Dataset `D` reaches mean AUC 0.7586 | Measured in a saved forward-validation run |
+| The catalogue contains 1,277,400 values across 3,103 encoded events | Verified from the checked-in file |
+| Dataset `D` reaches mean AUC 0.7588 | Measured in a saved forward-validation run |
 | The `Theta_3` wheel predicts the real process bit | Falsified in the saved 10-million-step run |
 | The process bit nearly alternates, with rare same-bit slips | Strong finite-run observation |
 | A listed value is never reached at any future step | Not proved by this repository |

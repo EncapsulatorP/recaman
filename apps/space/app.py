@@ -324,7 +324,7 @@ OVERVIEW = f"""
 {REGISTRY_ROWS}
 
 The live Agent Arena below refits lightweight process agents on a chronological 80/20
-split. The saved 0.7586 value-side model remains first-class evidence, but it cannot be
+split. The saved 0.7588 value-side model remains first-class evidence, but it cannot be
 blended into a next-bit ensemble until both models share an aligned target.
 """
 

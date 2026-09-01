@@ -52,7 +52,7 @@ Two counts appear in the repository and refer to different artifacts:
 
 | Count | Meaning |
 | --- | --- |
-| 1,277,399 | Current catalogue after expanding all encoded ranges |
+| 1,277,400 | Current catalogue after expanding all encoded ranges |
 | 194,358 | Positives recorded in the saved random-feature experiment |
 
 The second number comes from

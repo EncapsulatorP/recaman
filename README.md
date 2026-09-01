@@ -49,11 +49,11 @@ for local launch commands and automated checks.
 
 ## Current picture
 
-- The catalogue expands to **1,277,399 values** in **3,102 events**, spanning
-  `930,058` to `4,293,242,951`. These are exact statements about the file, not
+- The catalogue expands to **1,277,400 values** in **3,103 events**, spanning
+  `852,655` to `4,293,242,951`. These are exact statements about the file, not
   a theorem about the infinite sequence.
 - The strongest leakage-reduced value-side result is dataset `D` with mean AUC
-  **0.7586** under forward-chaining validation. It shows statistical
+  **0.7588** under forward-chaining validation. It shows statistical
   separation, not a per-integer test.
 - On a saved **10,000,000-step** run, the proposed `Theta_3` wheel has
   essentially no predictive separation (`|delta q| = 0.000011`).

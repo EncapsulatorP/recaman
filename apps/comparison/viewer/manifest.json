@@ -2,7 +2,9 @@
   "generator": "scripts/build_comparison_tables.py",
   "embedding_source": "https://huggingface.co/datasets/kugguk/recaman-independent-check-bundle/tree/main/embeddings",
   "catalogue_source": "obstructions.txt",
-  "catalogue_sha256": "c55f4f720fb8a5f9445bfead42f5a65e32771ac91a30db2a95de7e5abc151c7b",
+  "catalogue_upstream": "https://benchaffin.com/recaman/rec-holes-2_32.txt",
+  "catalogue_limit_exclusive": 4294967296,
+  "catalogue_sha256": "5cbf0ada7b909a937282a19281f8d9c4de3ce3cdbcc4f8f4677852e40fd6497e",
   "embedding_sha256": {
     "arc_lift.npz": "bc59999d42c2eec3f33b9030aae12add3f9a230552fcb9b1b55a65f9f94ea713",
     "delay_tau2.npz": "ca7a8e6b32646b2810214c7db608760d12999529c8be887354fb16a00e92d96b",
@@ -14,6 +16,8 @@
     "sequence": "viewer/sequence/sequence.parquet",
     "holes": "viewer/holes/chaffin_events.parquet",
     "fits": "viewer/fits/embedding_checks.parquet",
-    "summary": "viewer/summary/summary.parquet"
+    "summary": "viewer/summary/summary.parquet",
+    "obstruction_features": "viewer/obstructions/features.parquet",
+    "frequency_bands": "viewer/obstructions/frequency_bands.parquet"
   }
 }

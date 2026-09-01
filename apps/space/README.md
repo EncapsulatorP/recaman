@@ -95,7 +95,7 @@ The Space displays the repository's saved measurements under different
 information budgets:
 
 - arithmetic-only process features: AUC 0.6791;
-- leakage-reduced value-side gap dynamics: AUC 0.7586;
+- leakage-reduced value-side gap dynamics: AUC 0.7588;
 - arithmetic plus the previous sign: AUC 0.9907, dominated by alternation;
 - full visited-set collision oracle: AUC 1.0.
 

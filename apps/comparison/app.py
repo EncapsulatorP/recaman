@@ -18,6 +18,8 @@ TABLE_PATHS = {
     "holes": VIEWER_DIR / "holes" / "chaffin_events.parquet",
     "fits": VIEWER_DIR / "fits" / "embedding_checks.parquet",
     "summary": VIEWER_DIR / "summary" / "summary.parquet",
+    "obstruction_features": VIEWER_DIR / "obstructions" / "features.parquet",
+    "frequency_bands": VIEWER_DIR / "obstructions" / "frequency_bands.parquet",
 }
 MANIFEST_PATH = VIEWER_DIR / "manifest.json"
 
@@ -42,6 +44,8 @@ SEQUENCE = TABLES["sequence"]
 HOLES = TABLES["holes"]
 CHECKS = TABLES["fits"]
 SUMMARY = TABLES["summary"]
+OBSTRUCTION_FEATURES = TABLES["obstruction_features"]
+FREQUENCY_BANDS = TABLES["frequency_bands"]
 
 
 def validation_report() -> str:
@@ -63,6 +67,7 @@ def validation_report() -> str:
 | Embedding reconstructions | **{int(summary.embedding_checks_passed)}/{int(summary.embedding_checks_total)} passed** |
 | Chaffin events parsed | **{int(summary.chaffin_event_count):,}** |
 | Chaffin values represented by those intervals | **{int(summary.chaffin_value_count):,}** |
+| Chaffin events in the catalogue feature embedding | **{int(summary.catalogue_feature_events_covered):,}/{int(summary.chaffin_event_count):,}** |
 
 ### Source hashes
 
@@ -102,6 +107,77 @@ bundle validates the embeddings, but its `N={int(row.embedding_steps):,}`
 horizon cannot validate or falsify any Chaffin hole. No inferred-hole rows or
 synthetic predictions are used.
 """
+
+
+def obstruction_feature_view() -> tuple[go.Figure, pd.DataFrame]:
+    figure = px.scatter_3d(
+        OBSTRUCTION_FEATURES,
+        x="log10_start",
+        y="log10_gap_plus_one",
+        z="log10_length",
+        color="log10_length",
+        color_continuous_scale="Cividis",
+        hover_data=["event_id", "start", "end", "length", "gap_from_previous"],
+        title="Interpretable feature embedding of all catalogued obstruction events",
+        labels={
+            "log10_start": "log10(event start)",
+            "log10_gap_plus_one": "log10(previous gap + 1)",
+            "log10_length": "log10(run length)",
+        },
+    )
+    figure.update_traces(marker={"size": 3, "opacity": 0.72})
+    return figure, OBSTRUCTION_FEATURES
+
+
+def frequency_view() -> tuple[go.Figure, pd.DataFrame, str]:
+    plot_data = FREQUENCY_BANDS.melt(
+        id_vars="band",
+        value_vars=["events_per_million", "missing_values_per_million"],
+        var_name="measure",
+        value_name="rate_per_million",
+    )
+    plot_data["measure"] = plot_data["measure"].map(
+        {
+            "events_per_million": "Event starts per million candidates",
+            "missing_values_per_million": "Missing values per million candidates",
+        }
+    )
+    figure = px.bar(
+        plot_data,
+        x="band",
+        y="rate_per_million",
+        color="measure",
+        barmode="group",
+        log_y=True,
+        color_discrete_map={
+            "Event starts per million candidates": "#2563a6",
+            "Missing values per million candidates": "#b7791f",
+        },
+        title="Observed catalogue frequency by value band",
+        labels={"band": "Candidate-value band", "rate_per_million": "Rate per million (log scale)"},
+    )
+    figure.update_layout(legend_title_text=None)
+
+    last = FREQUENCY_BANDS.iloc[-1]
+    explanation = f"""
+### What changes after 852,655?
+
+The catalogue does **not** show a simple rise in independent obstruction-event
+frequency. After normalising by each band's candidate-value width, event starts
+become less frequent at larger scales. What rises in some later bands is the
+number of **missing integers**, because events increasingly include contiguous
+runs instead of isolated values.
+
+In the final displayed band, **{float(last.extension_share_of_missing):.1%}** of
+catalogued missing values are run-extension values beyond the event starts.
+That supports a precise structural hypothesis: investigate why local Recamán
+state creates *clusters/runs* of missed values, rather than claiming that the
+independent event-arrival rate simply increases.
+
+These are descriptive catalogue statistics after `10^612` computed terms. They
+do not establish causation or prove that a catalogued hole is absent forever.
+"""
+    return figure, FREQUENCY_BANDS, explanation
 
 
 def sequence_view(n_end: int) -> tuple[go.Figure, pd.DataFrame]:
@@ -239,6 +315,22 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
             outputs=[hole_plot, hole_table, boundary_report],
         )
 
+    with gr.Tab("Obstruction structure"):
+        gr.Markdown(
+            "This feature map covers every catalogued obstruction event, including "
+            "the first known rare hole at **852,655**. It is separate from the short "
+            "Recamán trajectory embedding."
+        )
+        obstruction_plot = gr.Plot()
+        obstruction_table = gr.Dataframe(
+            interactive=False, label="Catalogue feature coordinates"
+        )
+        frequency_plot = gr.Plot()
+        frequency_table = gr.Dataframe(
+            interactive=False, label="Frequency decomposition by value band"
+        )
+        frequency_explanation = gr.Markdown()
+
     with gr.Tab("Raw evidence"):
         gr.Markdown(
             "All downloadable files below are the exact tables used by the charts."
@@ -260,6 +352,14 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
         chaffin_view,
         inputs=minimum_length,
         outputs=[hole_plot, hole_table, boundary_report],
+    )
+    demo.load(
+        obstruction_feature_view,
+        outputs=[obstruction_plot, obstruction_table],
+    )
+    demo.load(
+        frequency_view,
+        outputs=[frequency_plot, frequency_table, frequency_explanation],
     )
 
 

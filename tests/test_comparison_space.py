@@ -24,7 +24,9 @@ SPEC.loader.exec_module(comparison)
 
 def test_real_comparison_tables_are_loaded() -> None:
     assert len(comparison.SEQUENCE) == 2_801
-    assert len(comparison.HOLES) == 3_102
+    assert len(comparison.HOLES) == 3_103
+    assert len(comparison.OBSTRUCTION_FEATURES) == 3_103
+    assert len(comparison.FREQUENCY_BANDS) == 5
     assert len(comparison.CHECKS) == 6
     assert len(comparison.SUMMARY) == 1
 
@@ -45,9 +47,9 @@ def test_every_embedding_reconstruction_check_passes() -> None:
 
 def test_chaffin_catalogue_is_exact_and_outside_embedding_span() -> None:
     summary = comparison.SUMMARY.iloc[0]
-    assert summary["chaffin_event_count"] == 3_102
-    assert summary["chaffin_value_count"] == 1_277_399
-    assert summary["chaffin_min"] == 930_058
+    assert summary["chaffin_event_count"] == 3_103
+    assert summary["chaffin_value_count"] == 1_277_400
+    assert summary["chaffin_min"] == 852_655
     assert summary["chaffin_max"] == 4_293_242_951
     assert summary["chaffin_events_within_embedding_span"] == 0
     assert comparison.HOLES["coverage_status"].eq("OUTSIDE_EMBEDDING_SPAN").all()
@@ -64,9 +66,23 @@ def test_views_expose_exact_matches_and_horizon_boundary() -> None:
 
     hole_figure, holes, boundary = comparison.chaffin_view(1)
     assert hole_figure.data
-    assert len(holes) == 3_102
-    assert "0 of 3,102" in boundary
+    assert len(holes) == 3_103
+    assert "0 of 3,103" in boundary
     assert "not testable by this finite embedding" in boundary
+
+
+def test_obstruction_embedding_covers_catalogue_and_decomposes_frequency() -> None:
+    feature_figure, features = comparison.obstruction_feature_view()
+    assert feature_figure.data
+    assert len(features) == 3_103
+    assert features.iloc[0]["start"] == 852_655
+    assert features["event_id"].is_unique
+
+    frequency_figure, bands, explanation = comparison.frequency_view()
+    assert frequency_figure.data
+    assert bands["missing_values"].sum() == 1_277_400
+    assert (bands["missing_values"] >= bands["event_starts"]).all()
+    assert "does **not** show a simple rise" in explanation
 
 
 def test_validation_report_contains_source_hashes() -> None:

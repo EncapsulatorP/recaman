@@ -34,18 +34,18 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_space_catalogue_is_synchronised_and_structurally_sound() -> None:
     catalogue = load_catalogue()
-    assert catalogue.event_count == 3_102
-    assert catalogue.singleton_count == 2_535
+    assert catalogue.event_count == 3_103
+    assert catalogue.singleton_count == 2_536
     assert catalogue.range_count == 567
-    assert catalogue.integer_count == 1_277_399
+    assert catalogue.integer_count == 1_277_400
     assert catalogue.longest_run == 368_058
     assert (ROOT / "apps" / "space" / "holes.txt").read_bytes() == (ROOT / "obstructions.txt").read_bytes()
 
 
 def test_hole_status_distinguishes_membership_from_scope() -> None:
-    first = hole_status(930_058)
+    first = hole_status(852_655)
     assert first["catalogued"] is True
-    assert first["event_start"] == 930_058
+    assert first["event_start"] == 852_655
     inside = hole_status(930_059)
     assert inside["status"] == "not_catalogued"
     assert inside["distance_to_nearest"] == 1
@@ -123,7 +123,7 @@ def test_evidence_registry_labels_value_and_process_targets_separately() -> None
         "gap between catalogued obstruction events",
         "next blocked/free bit",
     }
-    assert next(row for row in registry if row["model"] == "Value-side gap dynamics D")["auc"] == pytest.approx(0.7586356315)
+    assert next(row for row in registry if row["model"] == "Value-side gap dynamics D")["auc"] == pytest.approx(0.7587749589)
 
 
 def test_new_figures_are_well_formed_svg() -> None:

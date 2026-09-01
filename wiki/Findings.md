@@ -13,11 +13,11 @@ Structural totals derived from [`obstructions.txt`](https://github.com/Encapsula
 
 | Measurement | Value |
 | --- | ---: |
-| Expanded catalogue values | 1,277,399 |
-| Encoded events | 3,102 |
+| Expanded catalogue values | 1,277,400 |
+| Encoded events | 3,103 |
 | Singleton events | 2,535 |
 | Range events | 567 |
-| Smallest event start | 930,058 |
+| Smallest event start | 852,655 |
 | Largest event start | 4,293,242,951 |
 | Longest encoded range | 368,058 values |
 | Values concentrated in 104 runs of at least 1,001 | 97.2% |
@@ -29,7 +29,7 @@ for all future time is a separate question.
 
 | Experiment | Evaluation | Result | Interpretation |
 | --- | --- | ---: | --- |
-| Version C, dataset `D` | Forward CV, purged, time-local controls | Mean AUC **0.7586** | Best leakage-reduced value-side signal |
+| Version C, dataset `D` | Forward CV, purged, time-local controls | Mean AUC **0.7588** | Best leakage-reduced value-side signal |
 | Random feature search | Random-forest CV | Mean AUC **0.6633** | Moderate separation on a saved 194,358-positive run |
 | Random feature search | Best linear code | AUC **0.5994** | Weak-to-moderate single-projection signal |
 | Version C, `A/B/C` | Endpoint and anchor tasks | Mean AUC **0.994–0.996** | Easier retrospective discrimination |
@@ -37,7 +37,7 @@ for all future time is a separate question.
 Dataset `D` fold AUCs are `0.7884`, `0.7569`, `0.7863`, `0.7618`, and
 `0.6997`.
 
-### Why 0.7586 is more informative than 0.99
+### Why 0.7588 is more informative than 0.99
 
 The `A/B/C` tasks separate known event anchors from broad controls. Raw value,
 position, and event geometry can make that easy. Dataset `D` instead models

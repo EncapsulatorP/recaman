@@ -6,7 +6,7 @@ they clump, how far apart they are — and the measured scores of the models tha
 try to separate holes from matched controls.
 
 It deliberately makes no claim about any individual integer. The honest
-separation measured in this repository tops out at AUC 0.7586, which is real
+separation measured in this repository tops out at AUC 0.7588, which is real
 signal and nowhere near a test, so no per-number verdict is offered here.
 
 This is a different quantity from the Space in `apps/space/`, which predicts the
@@ -183,6 +183,11 @@ sign stream reconstructs the exact final term **a({process['steps']:,}) =
 {process['final_term']:,}**.
 
 ### Predictive compression, scored out of sample
+
+The displayed Version C result was regenerated from all 3,103 catalogue
+events. The saved random-matrix benchmark predates restoration of the
+`852,655` singleton and remains historical until its full 6,000-trial search is
+rerun.
 
 The near-alternation probability is estimated on the first
 {model['train_steps']:,} steps and frozen before encoding the final

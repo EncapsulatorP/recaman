@@ -468,16 +468,16 @@
     "cv_scheme": "forward",
     "dataset_d": {
       "auc": [
-        0.7883564231973631,
-        0.7569335064293704,
-        0.786339879306668,
-        0.7618420511132145,
-        0.6997062976984556
+        0.7892992229384674,
+        0.7592381280187364,
+        0.7856739334577929,
+        0.7586881615030922,
+        0.7009753487797852
       ],
-      "contexts": 3101,
-      "examples": 6202,
+      "contexts": 3102,
+      "examples": 6204,
       "feature_dim": 142,
-      "mean_auc": 0.7586356315490144
+      "mean_auc": 0.7587749589395748
     },
     "purge_contexts": 1,
     "summary": {
@@ -486,24 +486,24 @@
         "medium": 71,
         "pair": 374,
         "short": 18,
-        "singleton": 2535
+        "singleton": 2536
       },
-      "events": 3102,
+      "events": 3103,
       "gap_max": 128537156,
-      "gap_median": 50838.0,
+      "gap_median": 50910.5,
       "gap_min": 3,
       "gap_regime_counts": {
         "bootstrap": 2,
-        "compression": 1250,
+        "compression": 1251,
         "explosion": 1228,
         "stable": 622
       },
       "range_length_max": 368058,
       "range_length_min": 1,
       "ranges": 567,
-      "singletons": 2535,
+      "singletons": 2536,
       "start_max": 4293242951,
-      "start_min": 930058
+      "start_min": 852655
     }
   }
 }

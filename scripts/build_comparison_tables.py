@@ -238,6 +238,18 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
     fits = pd.DataFrame(checks)
 
     holes = parse_catalogue(CATALOGUE)
+    holes = holes.sort_values("start", ignore_index=True)
+    holes["event_id"] = np.arange(1, len(holes) + 1)
+    previous_end = holes["end"].shift(1)
+    holes["gap_from_previous"] = (holes["start"] - previous_end - 1).astype(
+        "Int64"
+    )
+    holes["log10_start"] = np.log10(holes["start"])
+    holes["log10_gap_plus_one"] = np.log10(
+        holes["gap_from_previous"].fillna(0).astype(float) + 1.0
+    )
+    holes["log10_length"] = np.log10(holes["length"])
+    holes["cumulative_missing_values"] = holes["length"].cumsum()
     observed_values = set(map(int, embedded_values))
     embedded_min, embedded_max = int(embedded_values.min()), int(embedded_values.max())
     holes["within_embedding_value_span"] = (
@@ -249,6 +261,65 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
         "WITHIN_VALUE_SPAN",
         "OUTSIDE_EMBEDDING_SPAN",
     )
+
+    # An interpretable feature embedding of every Chaffin event.  These are
+    # catalogue coordinates, not Recaman trajectory coordinates and not model
+    # predictions: x=value scale, y=preceding empty gap, z=run length.
+    obstruction_features = holes[
+        [
+            "event_id",
+            "start",
+            "end",
+            "length",
+            "gap_from_previous",
+            "log10_start",
+            "log10_gap_plus_one",
+            "log10_length",
+            "cumulative_missing_values",
+        ]
+    ].copy()
+
+    band_rows: list[dict[str, object]] = []
+    first_hole = int(holes["start"].min())
+    last_hole = int(holes["end"].max())
+    catalogue_limit_exclusive = 2**32
+    first_power = int(np.floor(np.log10(first_hole)))
+    last_power = int(np.floor(np.log10(last_hole)))
+    for power in range(first_power, last_power + 1):
+        low = 10**power
+        high = min(catalogue_limit_exclusive - 1, 10 ** (power + 1) - 1)
+        starts = holes.loc[holes["start"].between(low, high)].copy()
+        overlapping = holes.loc[holes["start"].le(high) & holes["end"].ge(low)]
+        missing = int(
+            sum(
+                max(0, min(int(row.end), high) - max(int(row.start), low) + 1)
+                for row in overlapping.itertuples()
+            )
+        )
+        width = high - low + 1
+        event_count = len(starts)
+        range_events = int(starts["length"].gt(1).sum())
+        band_rows.append(
+            {
+                "band": f"{low:,}–{high:,}",
+                "low": low,
+                "high": high,
+                "width": width,
+                "event_starts": event_count,
+                "range_events": range_events,
+                "missing_values": missing,
+                "run_extension_values": max(0, missing - event_count),
+                "events_per_million": event_count / width * 1_000_000,
+                "missing_values_per_million": missing / width * 1_000_000,
+                "range_share_of_events": range_events / event_count if event_count else 0.0,
+                "extension_share_of_missing": (
+                    max(0, missing - event_count) / missing if missing else 0.0
+                ),
+                "median_event_length": float(starts["length"].median()) if event_count else 0.0,
+                "max_event_length": int(starts["length"].max()) if event_count else 0,
+            }
+        )
+    frequency_bands = pd.DataFrame(band_rows)
 
     summary = pd.DataFrame(
         [
@@ -268,6 +339,8 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
                 "chaffin_events_within_embedding_span": int(
                     holes["within_embedding_value_span"].sum()
                 ),
+                "catalogue_feature_events_covered": len(obstruction_features),
+                "catalogue_feature_event_coverage": 1.0,
                 "overall_status": (
                     "PASS" if fits["status"].eq("PASS").all() else "FAIL"
                 ),
@@ -278,6 +351,8 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
         "generator": "scripts/build_comparison_tables.py",
         "embedding_source": "https://huggingface.co/datasets/kugguk/recaman-independent-check-bundle/tree/main/embeddings",
         "catalogue_source": "obstructions.txt",
+        "catalogue_upstream": "https://benchaffin.com/recaman/rec-holes-2_32.txt",
+        "catalogue_limit_exclusive": catalogue_limit_exclusive,
         "catalogue_sha256": sha256(CATALOGUE),
         "embedding_sha256": hashes,
         "tables": {
@@ -285,6 +360,8 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
             "holes": "viewer/holes/chaffin_events.parquet",
             "fits": "viewer/fits/embedding_checks.parquet",
             "summary": "viewer/summary/summary.parquet",
+            "obstruction_features": "viewer/obstructions/features.parquet",
+            "frequency_bands": "viewer/obstructions/frequency_bands.parquet",
         },
     }
     return {
@@ -292,6 +369,8 @@ def build() -> tuple[dict[str, pd.DataFrame], dict[str, object]]:
         "holes": holes,
         "fits": fits,
         "summary": summary,
+        "obstruction_features": obstruction_features,
+        "frequency_bands": frequency_bands,
     }, manifest
 
 
@@ -305,6 +384,8 @@ def main() -> int:
         "holes": VIEWER_DIR / "holes" / "chaffin_events.parquet",
         "fits": VIEWER_DIR / "fits" / "embedding_checks.parquet",
         "summary": VIEWER_DIR / "summary" / "summary.parquet",
+        "obstruction_features": VIEWER_DIR / "obstructions" / "features.parquet",
+        "frequency_bands": VIEWER_DIR / "obstructions" / "frequency_bands.parquet",
     }
     manifest_path = VIEWER_DIR / "manifest.json"
     if args.check:

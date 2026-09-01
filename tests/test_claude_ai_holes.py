@@ -182,7 +182,7 @@ def test_catalogue_event_codec_round_trips_and_compresses(catalogue) -> None:
     assert decode_events(encoded) == catalogue.events
     benchmark = catalogue_benchmark(catalogue, (SPACE_DIR / "holes.txt").read_bytes())
     assert benchmark["event_round_trip"] is True
-    assert benchmark["integer_count"] == 1_277_399
+    assert benchmark["integer_count"] == 1_277_400
     assert benchmark["best"]["bytes"] < benchmark["event_codec_bytes"]
     assert benchmark["best"]["ratio"] > 100
 
