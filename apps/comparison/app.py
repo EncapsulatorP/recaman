@@ -455,6 +455,95 @@ def summary_table() -> pd.DataFrame:
     return summary
 
 
+def validation_report() -> str:
+    """Return a compact, human-readable audit of the loaded viewer contract."""
+    with LOCK:
+        sequence = STORE.sequence.copy()
+        holes = STORE.holes.copy()
+        fits = STORE.fits.copy()
+        files = list(STORE.files)
+        loaded_ok = STORE.loaded_ok
+
+    checks: list[tuple[str, str, str]] = []
+
+    def add_schema_check(
+        label: str,
+        frame: pd.DataFrame,
+        required: set[str],
+    ) -> None:
+        if frame.empty:
+            checks.append((label, "WAITING", "No rows published"))
+            return
+        missing = sorted(required - set(frame.columns))
+        if missing:
+            checks.append((label, "FAIL", "Missing: " + ", ".join(missing)))
+        else:
+            checks.append((label, "PASS", f"{len(frame):,} rows"))
+
+    add_schema_check("Sequence schema", sequence, {"n", "a_n_real"})
+    add_schema_check(
+        "Hole schema",
+        holes,
+        {"value", "is_real_chaffin_hole"},
+    )
+    add_schema_check("Fit table", fits, {"run_id"})
+
+    for label, frame in (
+        ("Sequence fit scores", sequence),
+        ("Hole fit scores", holes),
+    ):
+        if frame.empty or "fit_score" not in frame.columns:
+            checks.append((label, "WAITING", "No scores published"))
+            continue
+        scores = pd.to_numeric(frame["fit_score"], errors="coerce").dropna()
+        if scores.empty:
+            checks.append((label, "WAITING", "No numeric scores published"))
+        elif scores.between(0.0, 1.0).all():
+            checks.append((label, "PASS", f"{len(scores):,} scores in [0, 1]"))
+        else:
+            checks.append((label, "FAIL", "Values outside [0, 1]"))
+
+    prefix_count = sum(
+        bool(_files_for_prefix(files, prefix))
+        for prefix in EXPECTED_PREFIXES.values()
+    )
+    checks.insert(
+        0,
+        (
+            "Dataset table groups",
+            "PASS" if prefix_count >= 3 else "WAITING",
+            f"{prefix_count}/4 groups published",
+        ),
+    )
+
+    if any(status == "FAIL" for _, status, _ in checks):
+        overall = "FAIL"
+    elif loaded_ok and any(status == "PASS" for _, status, _ in checks):
+        overall = (
+            "PARTIAL"
+            if any(status == "WAITING" for _, status, _ in checks)
+            else "PASS"
+        )
+    else:
+        overall = "WAITING"
+
+    rows = "\n".join(
+        f"| {label} | **{status}** | {detail} |"
+        for label, status, detail in checks
+    )
+    return f"""
+### Dataset validation — **{overall}**
+
+| Check | Status | Evidence |
+|---|---|---|
+{rows}
+
+`PASS` means the loaded data satisfies the viewer contract. `WAITING` means
+the dataset has not published that table yet; it is not silently replaced
+with inferred or synthetic evidence.
+"""
+
+
 def _filter_run(df: pd.DataFrame, run_id: str) -> pd.DataFrame:
     if df.empty or "run_id" not in df.columns:
         return df.copy()
@@ -952,6 +1041,7 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
             interactive=False,
             wrap=True,
         )
+        validation_md = gr.Markdown()
 
     with gr.Tab("Sequence"):
         with gr.Row():
@@ -1202,6 +1292,7 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
             raw,
             overview,
             table,
+            validation_report(),
         )
 
     reload_outputs = [
@@ -1222,6 +1313,7 @@ with gr.Blocks(title="Recamán Independent Check Visualizer") as demo:
         raw_df,
         overview_md,
         overview_table,
+        validation_md,
     ]
 
     reload_button.click(

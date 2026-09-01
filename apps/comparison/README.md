@@ -5,9 +5,11 @@ colorFrom: indigo
 colorTo: blue
 sdk: gradio
 sdk_version: 6.26.0
+python_version: "3.11"
 app_file: app.py
 pinned: false
 license: mit
+short_description: Compare Recamán reference and inferred evidence
 ---
 
 # Recamán Independent Check Visualizer
@@ -65,6 +67,11 @@ Recommended:
 - `run_id`
 
 All fit scores should use the normalized range `0.0 ... 1.0`.
+
+The app includes an explicit validation panel. It reports whether every table
+group is present, required columns are valid, and fit scores stay in the
+declared range. Missing data leaves the interface online with a clear
+`WAITING` status rather than presenting fabricated comparisons.
 
 ## Optional environment variables
 
