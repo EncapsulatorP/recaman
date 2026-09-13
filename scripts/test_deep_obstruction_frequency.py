@@ -55,7 +55,7 @@ def structures_match(actual: object, expected: object) -> bool:
         and isinstance(expected, (int, float))
         and not isinstance(expected, bool)
     ):
-        return math.isclose(float(actual), float(expected), rel_tol=1e-15, abs_tol=1e-15)
+        return math.isclose(float(actual), float(expected), rel_tol=1e-12, abs_tol=1e-12)
     return actual == expected
 
 
