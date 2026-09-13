@@ -32,3 +32,9 @@ def test_catalogue_profile_and_primary_result() -> None:
 
 def test_checked_in_frequency_outputs_are_current() -> None:
     assert frequency.main(["--check"]) == 0
+
+
+def test_structures_match_tolerates_insignificant_json_float_drift() -> None:
+    actual = {"value": 1.9885070644036672e-08, "nested": [0.9052173913043478]}
+    expected = {"value": 1.9885070644036682e-08, "nested": [0.9052173913043478]}
+    assert frequency.structures_match(actual, expected)
