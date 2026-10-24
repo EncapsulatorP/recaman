@@ -101,6 +101,21 @@ def test_counts_are_internally_consistent(catalogue) -> None:
     )
 
 
+@pytest.mark.parametrize("benchmark", ["catalogue", "process"])
+def test_compression_scoreboards_show_exact_codec_results(catalogue, benchmark) -> None:
+    payload = (
+        catalogue_benchmark(catalogue, (SPACE_DIR / "holes.txt").read_bytes())
+        if benchmark == "catalogue"
+        else process_benchmark(20000)
+    )
+    frame = benchmark_frame(payload)
+
+    assert not frame.empty
+    assert frame["codec"].tolist() == [row["name"] for row in payload["rows"]]
+    assert frame["bytes"].tolist() == [row["bytes"] for row in payload["rows"]]
+    assert frame["round trip"].eq("exact").all()
+
+
 def test_parse_rejects_overlapping_and_inverted_events() -> None:
     with pytest.raises(ValueError, match="overlapping"):
         parse("10 - 20\n15\n")
