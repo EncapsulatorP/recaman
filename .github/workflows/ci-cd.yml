@@ -55,6 +55,9 @@ jobs:
       - name: Verify obstruction and tower app data is current
         run: python scripts/build_obstruction_tower_space.py --check
 
+      - name: Verify weekly Agent Arena ledger is current
+        run: python scripts/run_weekly_arena.py --check
+
       - name: Verify the infographic matches the saved run
         run: python scripts/make_infographic.py --check
 
@@ -139,6 +142,9 @@ jobs:
           assert app.simulate_bits(64)['steps'] == 64;
           arena_svg, arena_report, arena = app.inspect_model_arena(20000, 3, 210);
           assert arena_svg.startswith('<svg') and arena_report and arena['test_steps'] > 0;
+          revealed, replay_plot, replay_score, replay_card, replay = app.inspect_replay(20000, 3, 210, 64);
+          assert revealed == 64 and not replay_plot.empty and not replay_score.empty;
+          assert replay_card.startswith('<section') and replay['hidden_remaining'] > 0;
           tower_svg, tower_report, tower = app.inspect_signed_tower(2000);
           assert tower_svg.startswith('<svg') and tower['identity_verified'] and tower_report;
           power_svg, power_report, power = app.inspect_power_probe(3, 210, 64);

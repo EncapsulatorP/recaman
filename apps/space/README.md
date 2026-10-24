@@ -1,5 +1,5 @@
 ---
-title: Recamán Next-Move Model Lab
+title: Recamán Next-Move Arena
 emoji: 🧠
 colorFrom: purple
 colorTo: blue
@@ -9,7 +9,7 @@ python_version: "3.11"
 app_file: app.py
 license: mit
 pinned: false
-short_description: Forward-held-out agents for Recamán's next move
+short_description: Blind inference and evolving agents for Recamán
 tags:
   - mathematics
   - number-theory
@@ -19,16 +19,18 @@ tags:
   - reproducible-research
 ---
 
-# Recamán Next-Move Model Lab
+# Recamán Next-Move Arena
 
 This is the rigorous sibling of the compression-focused obstruction Space. Its
 target is the process-side obstruction bit: whether Recamán's attempted backward
 move is free or blocked.
 
-- **Agent Arena** — inferred models fit the first 80% of a prefix and are scored
-  only on its untouched final 20%;
-- **model evolution** — AUC, calibration, accuracy and predictive code length
-  decide which agent earns influence;
+- **blind replay** — inferred models fit the first 80%, then visitors reveal the
+  untouched future one prediction at a time;
+- **weekly Champion–Challenger league** — Tower configurations are selected on
+  a middle validation block and get one sealed promotion test;
+- **model evolution** — predictive code length is primary, while phase-slip
+  average precision tests whether high accuracy hides rare-event failure;
 - **signed tower** — the exact identity
   `aₙ = Σᵢ≤ₙ i(2bᵢ−1) = Tₙ − 2ΣDₙ`;
 - **tower shadows** — saved null-controlled power-of-two rank and
@@ -101,6 +103,7 @@ information budgets:
 
 ## API endpoints
 
+- `/blind_replay`
 - `/model_arena`
 - `/evolution_race`
 - `/signed_tower_snapshot`

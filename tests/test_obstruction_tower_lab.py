@@ -10,7 +10,12 @@ from pathlib import Path
 import pytest
 from arena_figures import arena_scoreboard
 from hole_catalogue import load_catalogue
-from model_arena import evaluate_arena, evidence_registry
+from model_arena import (
+    evaluate_arena,
+    evaluate_replay,
+    evaluate_weekly_league,
+    evidence_registry,
+)
 from tower_figures import (
     evolution_race_svg,
     hole_density_svg,
@@ -110,11 +115,39 @@ def test_model_arena_uses_a_chronological_holdout_and_keeps_oracle_separate() ->
     assert 0 < payload["champion_bits_per_step"] < 1
     assert 0 <= payload["tower_added_to_ensemble"] <= 1
     names = {agent["name"] for agent in payload["agents"]}
-    assert {"Tower scout", "Modulo hunter", "Phase-slip hunter", "Forward ensemble"} <= names
+    assert {
+        "Tower scout",
+        "Tower-augmented challenger",
+        "Modulo hunter",
+        "Phase-slip hunter",
+        "Forward ensemble",
+    } <= names
     oracle = next(agent for agent in payload["agents"] if agent["name"] == "Exact visited-set oracle")
     assert "not inferred" in oracle["status"]
     ensemble = next(agent for agent in payload["agents"] if agent["name"] == "Forward ensemble")
     assert "Exact visited-set oracle" not in ensemble["weights"]
+
+
+def test_blind_replay_exposes_only_the_requested_test_prefix() -> None:
+    payload = evaluate_replay(20_000, 3, 210, 64)
+    assert payload["revealed"] == 64
+    assert len(payload["history"]) == 64
+    assert payload["hidden_remaining"] == payload["test_steps"] - 64
+    assert payload["history"][-1]["step"] == payload["current"]["step"]
+    assert all("phase_slip_ap" in row for row in payload["scoreboard"])
+    assert "no future labels" in payload["protocol"].lower()
+
+
+def test_weekly_league_selects_before_opening_the_promotion_block() -> None:
+    payload = evaluate_weekly_league(
+        30_000,
+        candidates=((2, 97), (3, 210)),
+    )
+    assert payload["protocol"].startswith("60% fit / 20% challenger selection")
+    assert len(payload["validation_search"]) == 2
+    assert payload["decision"] in {"PROMOTE CHALLENGER", "KEEP CHAMPION"}
+    assert payload["champion"]["phase_slip_ap"] >= 0
+    assert payload["challenger"]["phase_slip_ap"] >= 0
 
 
 def test_evidence_registry_labels_value_and_process_targets_separately() -> None:

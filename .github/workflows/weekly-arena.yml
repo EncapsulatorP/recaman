@@ -1,0 +1,60 @@
+name: Weekly Recaman Arena
+
+"on":
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: weekly-recaman-arena
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  champion-challenger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Advance sealed season
+        id: evolve
+        run: |
+          python scripts/run_weekly_arena.py --advance
+          if git diff --quiet -- apps/space/weekly_arena.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify generated ledger
+        if: steps.evolve.outputs.changed == 'true'
+        run: python scripts/run_weekly_arena.py --check
+
+      - name: Open season promotion pull request
+        if: steps.evolve.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          season=$(python -c "import json; print(json.load(open('apps/space/weekly_arena.json'))['season'])")
+          branch="automation/recaman-arena-season-${season}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add apps/space/weekly_arena.json
+          git commit -m "update recaman arena season ${season}"
+          git push origin "$branch"
+          gh pr create \
+            --base main \
+            --head "$branch" \
+            --title "Recamán arena season ${season}" \
+            --body "Weekly sealed champion–challenger evaluation. Review the measured promotion decision in apps/space/weekly_arena.json before merging."
