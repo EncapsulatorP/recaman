@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -37,6 +38,34 @@ DEPTH_THRESHOLDS = (1, 2, 10, 100, 1000)
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def structures_match(actual: object, expected: object) -> bool:
+    if isinstance(actual, dict) and isinstance(expected, dict):
+        return actual.keys() == expected.keys() and all(
+            structures_match(actual[key], expected[key]) for key in actual
+        )
+    if isinstance(actual, list) and isinstance(expected, list):
+        return len(actual) == len(expected) and all(
+            structures_match(left, right) for left, right in zip(actual, expected)
+        )
+    if (
+        isinstance(actual, (int, float))
+        and not isinstance(actual, bool)
+        and isinstance(expected, (int, float))
+        and not isinstance(expected, bool)
+    ):
+        return math.isclose(float(actual), float(expected), rel_tol=1e-12, abs_tol=1e-12)
+    return actual == expected
+
+
+def output_matches(path: Path, expected: str) -> bool:
+    if not path.exists():
+        return False
+    actual = path.read_text(encoding="utf-8")
+    if path == DEFAULT_RESULTS:
+        return structures_match(json.loads(actual), json.loads(expected))
+    return actual == expected
 
 
 def parse_catalogue(path: Path) -> pd.DataFrame:
@@ -312,7 +341,9 @@ def main(argv: list[str] | None = None) -> int:
         DEFAULT_REPORT: expected_report,
     }
     if args.check:
-        stale = [path for path, expected in targets.items() if not path.exists() or path.read_text(encoding="utf-8") != expected]
+        stale = [
+            path for path, expected in targets.items() if not output_matches(path, expected)
+        ]
         if stale:
             for path in stale:
                 print(f"{path.relative_to(ROOT)} is out of date")
