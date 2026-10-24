@@ -1,0 +1,26 @@
+{
+  "algorithm": "scripts/recaman_phase_space_3d.py",
+  "steps": 2800,
+  "delay": {
+    "tau": 2,
+    "shape": [
+      2797,
+      3
+    ]
+  },
+  "spatiotemporal": {
+    "shape": [
+      2800,
+      3
+    ]
+  },
+  "arc_lift": {
+    "samples_per_arc": 40,
+    "twist": 1.8,
+    "elevation_scale": 1.0,
+    "shape": [
+      112000,
+      3
+    ]
+  }
+}

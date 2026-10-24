@@ -36,18 +36,33 @@ patterns survive honest validation.
 A blocked step is not a missing integer. Predicting `b(n)` does not identify
 which values are permanently absent.
 
-## Live experiments
+## Interactive applications
 
-- **Flagship:** [Recamán Next-Move Arena](https://huggingface.co/spaces/kugguk/recaman-next-move) — blind step-by-step inference, a weekly Champion–Challenger league, tower/modular ablations and predictive code length.
-- **Experimental feeder:** [Recamán Obstruction Compression Lab](https://huggingface.co/spaces/kugguk/recaman-obstruction-lab) — hoverable lossless-codec races, a 3,102-event obstruction map, phase-slip scope and exact round-trip checks.
+The repository includes three locally runnable Gradio tools:
+
+- [Recamán Obstruction Compression Lab](apps/claude_ai_holes/README.md) — lossless range/delta codecs, phase-slip encoding and exact round-trip checks.
+- [Recamán Next-Move Model Lab](apps/space/README.md) — inferred agents, chronological holdouts, tower/modular ablations and predictive code length.
+- [Recamán Independent Check Visualizer](apps/comparison/README.md) — exact NPZ checks plus a ten-million-step, per-value trace of how early holes were missed by the recurrence.
+
+They are not advertised as public hosted demos. See [Demos and CI](wiki/Demos-and-Deployment.md)
+for local launch commands and automated checks.
 
 ## Current picture
 
-- The catalogue expands to **1,277,399 values** in **3,102 events**, spanning
-  `930,058` to `4,293,242,951`. These are exact statements about the file, not
+- The catalogue expands to **1,277,400 values** in **3,103 events**, spanning
+  `852,655` to `4,293,242,951`. These are exact statements about the file, not
   a theorem about the infinite sequence.
+- Across 24 equal multiplicative value bins after `852,655`, deeper contiguous
+  obstruction runs become more frequent at every tested threshold (Holm-adjusted
+  permutation `p ≤ 0.00060`); this supports the pattern, not its proposed
+  visited-set-saturation mechanism.
+- A mechanism-first trace covers all **103 catalogue values at or below
+  10,000,000**. Of these, **23** appeared as an addition candidate but were
+  bypassed by a legal subtraction; **80** were never proposed on either branch
+  through ten million steps. This is finite transition evidence, not a
+  permanence proof.
 - The strongest leakage-reduced value-side result is dataset `D` with mean AUC
-  **0.7586** under forward-chaining validation. It shows statistical
+  **0.7588** under forward-chaining validation. It shows statistical
   separation, not a per-integer test.
 - On a saved **10,000,000-step** run, the proposed `Theta_3` wheel has
   essentially no predictive separation (`|delta q| = 0.000011`).
@@ -68,7 +83,7 @@ See [Findings](wiki/Findings.md) for the measurements and their limits.
 | Reproduce an experiment | [Reproducing the research](wiki/Reproducing-the-Research.md) |
 | Find a script or output | [Repository guide](wiki/Repository-Guide.md) |
 | See what remains unresolved | [Open questions](wiki/Open-Questions.md) |
-| Run or deploy the interactive apps | [Demos and deployment](wiki/Demos-and-Deployment.md) |
+| Run the interactive apps | [Demos and CI](wiki/Demos-and-Deployment.md) |
 
 The full entry point is the [research wiki](wiki/Home.md).
 
@@ -105,7 +120,7 @@ results and generated assets are listed in
 | [`obstructions.txt`](obstructions.txt) | Catalogued value-side holes and ranges |
 | [`scripts/`](scripts/) | Generators, feature searches, validators, and plots |
 | [`outputs/`](outputs/) | Saved measurements and generated figures |
-| [`apps/`](apps/) | Two separate Gradio explorers |
+| [`apps/`](apps/) | Three separate Gradio explorers |
 | [`supporting_docs/`](supporting_docs/) | Extended mathematical notes and papers |
 | [`wiki/`](wiki/) | Navigable research documentation |
 | [`tests/`](tests/) | Unit, provenance, and smoke checks |
@@ -113,7 +128,7 @@ results and generated assets are listed in
 ## Further reading
 
 - [Extended mathematical note](supporting_docs/recaman_final_math.md)
-- [CI and deployment](DEPLOYMENT.md)
+- [CI and local apps](DEPLOYMENT.md)
 - [MIT License](LICENSE)
 
 <img src="assets/online-presence.svg" alt="Online presence" width="160">

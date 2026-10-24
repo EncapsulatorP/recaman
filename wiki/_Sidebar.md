@@ -8,7 +8,7 @@
 - [Reproducing the research](Reproducing-the-Research.md)
 - [Repository guide](Repository-Guide.md)
 - [Open questions](Open-Questions.md)
-- [Demos and deployment](Demos-and-Deployment.md)
+- [Demos and CI](Demos-and-Deployment.md)
 
 ## Project
 

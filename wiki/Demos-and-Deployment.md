@@ -1,4 +1,4 @@
-# Demos and deployment
+# Demos and CI
 
 [Home](Home.md) · [Findings](Findings.md) ·
 [Reproduce](Reproducing-the-Research.md) ·
@@ -13,9 +13,10 @@ meanings of obstruction must remain distinct.
 | --- | --- | --- |
 | [Value-side hole explorer](https://github.com/EncapsulatorP/recaman/tree/main/apps/claude_ai_holes) | Catalogue counts, runs, span density, and model scores | It does not certify a submitted number as permanently absent |
 | [Process-bit explorer](https://github.com/EncapsulatorP/recaman/tree/main/apps/space) | Next-bit baseline, sequence prefixes, and phase slips | It does not identify missing integers |
+| [Independent comparison visualizer](https://github.com/EncapsulatorP/recaman/tree/main/apps/comparison) | Exact embedding/recurrence checks and Chaffin horizon coverage | It does not treat catalogue events outside the finite embedding span as predictions |
 
-The repository does not currently encode stable public Space URLs, so this
-page links to source rather than guessing deployment addresses.
+The repository does not advertise public hosted URLs. This page links to the
+versioned source and documents local execution.
 
 ## Run locally
 
@@ -32,6 +33,17 @@ python apps/claude_ai_holes/app.py
 python -m pip install -r apps/space/requirements.txt
 python apps/space/app.py
 ```
+
+### Independent comparison visualizer
+
+```bash
+python -m pip install -r apps/comparison/requirements.txt
+python apps/comparison/app.py
+```
+
+The comparison app uses hash-pinned NPZ files from the public independent-check
+dataset. Its validation panel shows exact reconstruction counts and makes the
+finite-horizon boundary with Chaffin's catalogue explicit.
 
 Gradio prints the local address after startup.
 
@@ -56,22 +68,14 @@ python scripts/build_space_measurements.py --check
 python scripts/make_infographic.py --check
 ```
 
-## Continuous deployment
+## Continuous integration
 
 [`.github/workflows/ci-cd.yml`](https://github.com/EncapsulatorP/recaman/blob/main/.github/workflows/ci-cd.yml)
-runs tests and smoke checks, then can publish each app to a separate Hugging
-Face Space after a successful push to `main`.
-
-| Variable | App |
-| --- | --- |
-| `HF_HOLES_SPACE_REPO_ID` | Value-side hole explorer |
-| `HF_SPACE_REPO_ID` | Process-bit explorer |
-
-Both use the `HF_TOKEN` secret and the `huggingface-space` environment. If a
-repository variable is absent, that deployment is skipped without failing CI.
+runs tests, generated-data drift checks, and isolated smoke checks for all three
+applications. It has no publication jobs and requires no hosting credentials.
 
 See [`DEPLOYMENT.md`](https://github.com/EncapsulatorP/recaman/blob/main/DEPLOYMENT.md)
-for SDK pins, permissions, regeneration, and release details.
+for SDK pins, regeneration, and CI details.
 
 ---
 

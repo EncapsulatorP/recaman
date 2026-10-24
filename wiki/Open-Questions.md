@@ -27,7 +27,7 @@ could produce a proof of absolute obstruction.
 
 ## 2. Can long-lasting holes be inferred honestly?
 
-The current mean AUC of 0.7586 for dataset `D` is evidence of local structure,
+The current mean AUC of 0.7588 for dataset `D` is evidence of local structure,
 not a hole detector. A next-generation benchmark should predict a precisely
 defined target such as:
 
@@ -96,4 +96,4 @@ test scaling laws with uncertainty intervals and out-of-sample checkpoints.
 ---
 
 [← Repository guide](Repository-Guide.md) ·
-[Next: Demos and deployment →](Demos-and-Deployment.md)
+[Next: Demos and CI →](Demos-and-Deployment.md)

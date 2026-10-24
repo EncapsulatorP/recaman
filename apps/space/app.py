@@ -51,7 +51,6 @@ HERE = Path(__file__).resolve().parent
 WEEKLY_ARENA = json.loads((HERE / "weekly_arena.json").read_text(encoding="utf-8"))
 DEFAULT_CHOICE = next(iter(MOVE_CHOICES))
 REPO_URL = "https://github.com/EncapsulatorP/recaman"
-SPACE_URL = "https://huggingface.co/spaces/kugguk/recaman-next-move"
 MAX_RAW_STEPS = 5_000
 
 
@@ -383,7 +382,7 @@ OVERVIEW = f"""
 {REGISTRY_ROWS}
 
 The live Agent Arena below refits lightweight process agents on a chronological 80/20
-split. The saved 0.7586 value-side model remains first-class evidence, but it cannot be
+split. The saved 0.7588 value-side model remains first-class evidence, but it cannot be
 blended into a next-bit ensemble until both models share an aligned target.
 """
 
@@ -666,7 +665,7 @@ with gr.Blocks(
         with gr.Tab("Method & limits"):
             gr.Markdown(METHOD)
 
-    gr.Markdown(f"[Research repository]({REPO_URL}) · [Hugging Face Space]({SPACE_URL})")
+    gr.Markdown(f"[Research repository]({REPO_URL})")
 
     demo.load(
         inspect_replay,

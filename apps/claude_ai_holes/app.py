@@ -6,7 +6,7 @@ they clump, how far apart they are — and the measured scores of the models tha
 try to separate holes from matched controls.
 
 It deliberately makes no claim about any individual integer. The honest
-separation measured in this repository tops out at AUC 0.7586, which is real
+separation measured in this repository tops out at AUC 0.7588, which is real
 signal and nowhere near a test, so no per-number verdict is offered here.
 
 This is a different quantity from the Space in `apps/space/`, which predicts the
@@ -186,12 +186,42 @@ def compression_experiment(steps: int) -> tuple[object, object, str, dict]:
     catalogue_best = CATALOGUE_COMPRESSION["best"]
     process_best = process["best"]
     model = process["held_out_model"]
-    report = f'''<div class="kg-result-grid" aria-live="polite">
-<div class="kg-result kg-result-accent"><span>catalogue winner</span><strong>{catalogue_best['ratio']:.1f}×</strong><small>{catalogue_best['name']} · {catalogue_best['bytes']:,} bytes</small></div>
-<div class="kg-result"><span>process winner</span><strong>{process_best['ratio']:.1f}×</strong><small>{process_best['name']} · {process_best['bytes']:,} bytes</small></div>
-<div class="kg-result"><span>held-out prediction</span><strong>{model['bits_per_step']:.4f}</strong><small>bits/step · {model['theoretical_saving']:.2%} below the 1-bit baseline</small></div>
-</div>
-<div class="kg-verification"><b>✓ Exact round trips</b><span>events</span><span>packed bits</span><span>phase slips</span><span>trajectory a({process['steps']:,}) = {process['final_term']:,}</span></div>'''
+    report = f"""
+## Compression is the experiment
+
+The hole set contains **{CATALOGUE_COMPRESSION['integer_count']:,} integers**, but only
+**{CATALOGUE_COMPRESSION['event_count']:,} consecutive-range events**. The best tested
+lossless representation stores the same set in **{catalogue_best['bytes']:,} bytes**:
+**{catalogue_best['ratio']:.1f}× smaller** than an expanded uint32 list. Its decoder
+reconstructs every event exactly.
+
+For the live process prefix, the obstruction stream has **{process['phase_slips']:,}
+phase slips** in {process['steps']:,} steps. The best serialized codec here is
+**{process_best['name']}** at **{process_best['bytes']:,} bytes**, or
+**{process_best['ratio']:.1f}× smaller** than storing one byte per bit. Decoding the
+sign stream reconstructs the exact final term **a({process['steps']:,}) =
+{process['final_term']:,}**.
+
+### Predictive compression, scored out of sample
+
+The displayed Version C result was regenerated from all 3,103 catalogue
+events. The saved random-matrix benchmark predates restoration of the
+`852,655` singleton and remains historical until its full 6,000-trial search is
+rerun.
+
+The near-alternation probability is estimated on the first
+{model['train_steps']:,} steps and frozen before encoding the final
+{model['test_steps']:,}. Its ideal arithmetic-code bound is
+**{model['bits_per_step']:.4f} bits/step**, versus **1.0000** for an uninformed binary
+code—a theoretical saving of **{model['theoretical_saving']:.2%}**.
+
+That is the clean connection to the model arena: a model earns influence only when it
+shortens held-out data. A tower feature that looks dramatic but cannot save bits loses
+to the Skeptic.
+
+> General-purpose codec sizes are actual serialized bytes. The model code length is an
+> information-theoretic arithmetic-coding bound and is labelled separately.
+"""
     payload = {
         "catalogue": CATALOGUE_COMPRESSION,
         "process": process,
