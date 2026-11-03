@@ -226,6 +226,15 @@ def test_phase_scope_is_interactive_and_exact() -> None:
     assert "reconstructed from the sign stream" in report
 
 
+def test_interactive_process_compression_view_keeps_exact_hover_values() -> None:
+    payload = process_benchmark(20_000)
+    score = benchmark_frame(payload)
+    assert not score.empty
+    assert len(score) == len(payload["rows"])
+    assert score["bytes"].tolist() == [row["bytes"] for row in payload["rows"]]
+    assert set(score["round trip"]) == {"exact"}
+
+
 # --- figures ---------------------------------------------------------------
 
 
